@@ -1,8 +1,9 @@
-from openai import OpenAI
-import shelve
-from dotenv import load_dotenv
 import os
+import shelve
 import time
+
+from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 OPEN_AI_API_KEY = os.getenv("OPEN_AI_API_KEY")

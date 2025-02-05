@@ -1,8 +1,9 @@
-from functools import wraps
-from flask import current_app, jsonify, request
-import logging
 import hashlib
 import hmac
+import logging
+from functools import wraps
+
+from flask import current_app, jsonify, request
 
 
 def validate_signature(payload, signature):
