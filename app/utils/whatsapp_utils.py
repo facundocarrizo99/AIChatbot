@@ -88,19 +88,14 @@ def process_whatsapp_message(body):
     if wa_id.startswith("54911"):
         wa_id = wa_id.replace("54911", "5411")
 
-    # print(wa_id)
-    print(body)
-    # borrar cuando se este probando con chatgpt
-    response = generate_response_upper(message_body)
-
     # OpenAI Integration (Si descimentamos esto arranca a cobrar en usd :()
     response = generate_response(message_body, wa_id, name)
+    #intrpretar la respuesta de chatgpt y ver como la acoplamos al conportamiento quenostros necetiasmos
     response = process_text_for_whatsapp(response)
 
     data = get_text_message_input(wa_id, response)
-    # test = get_text_message_input(current_app.config["RECIPIENT_WAID"], response)
-    # print("CON WAID que harcodeado en env: ",test)
     print("CON WAID que vino en el mensaje: ", data)
+
     send_message(data)
 
 
