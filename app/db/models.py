@@ -26,6 +26,7 @@ class Monotributista(Usuario):
         self.domicilio = None
         self.domicilioFiscal = domicilioFiscal
         self.punto_venta = punto_venta
+        self.clientes = []  # Lista de clientes
 
 class ConsumidorFinal(Usuario):
     def __init__(self, userId, password, nombreCompleto, telefono, email, condicionIva,
