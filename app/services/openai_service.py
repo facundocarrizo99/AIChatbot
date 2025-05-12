@@ -12,13 +12,6 @@ OPENAI_ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-def upload_file(path):
-    # Upload a file with an "assistants" purpose
-    file = client.files.create(
-        file=open("../../data/airbnb-faq.pdf", "rb"), purpose="assistants"
-    )
-
-
 def create_assistant(file):
     """
     You currently cannot set the temperature for Assistant via the API.
@@ -69,7 +62,7 @@ def run_assistant(thread, name):
     return new_message
 
 
-def generate_response(message_body, wa_id, name):
+def generateAIResponse(message_body, wa_id, name):
     # Check if there is already a thread_id for the wa_id
     thread_id = check_if_thread_exists(wa_id)
 
