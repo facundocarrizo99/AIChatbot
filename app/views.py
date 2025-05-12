@@ -31,10 +31,10 @@ def handle_message():
 
     # Check if it's a WhatsApp status update
     if (
-        body.get("entry", [{}])[0]
-        .get("changes", [{}])[0]
-        .get("value", {})
-        .get("statuses")
+            body.get("entry", [{}])[0]
+                    .get("changes", [{}])[0]
+                    .get("value", {})
+                    .get("statuses")
     ):
         logging.info("Received a WhatsApp status update.")
         return jsonify({"status": "ok"}), 200
@@ -81,9 +81,8 @@ def verify():
 def webhook_get():
     return verify()
 
+
 @webhook_blueprint.route("/webhook", methods=["POST"])
 @signature_required
 def webhook_post():
     return handle_message()
-
-
