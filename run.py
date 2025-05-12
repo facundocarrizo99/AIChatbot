@@ -1,9 +1,19 @@
-import logging
+from flask import Flask, jsonify
+from app.controller.controller import UsuarioController
 
-from app import create_app
-
-app = create_app()
+app = Flask(__name__)
+controller = UsuarioController()
 
 if __name__ == "__main__":
-    logging.info("Flask app started")
+    """
+    cliente_data = {
+    "nombreCompleto": "Cliente Ejemplo",
+    "telefono": "1100000001",
+    "email": "cliente@correo.com",
+    "condicionIva": "ConsumidorFinal",
+    "cuit": "20304050608",
+    "domicilio": "Calle Falsa 123"
+    }
+    controller.agregar_cliente_a_monotributista("1100000000",cliente_data)
+    """
     app.run(host="0.0.0.0", port=8000)
