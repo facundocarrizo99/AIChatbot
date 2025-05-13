@@ -1,19 +1,15 @@
 import json
 import logging
-from app.services.openai_service import generate_response
+from app.services.openai_service import generateAIResponse
+from app.utils.string_utils import getOnlyJsonFrom, hasJsonInside, stringToAction
 import re
-
 import requests
 from flask import current_app, jsonify
-
-# from start.whatsapp_quickstart import RECIPIENT_WAID
-
 
 def log_http_response(response):
     logging.info(f"Status: {response.status_code}")
     logging.info(f"Content-type: {response.headers.get('content-type')}")
     logging.info(f"Body: {response.text}")
-
 
 def get_text_message_input(recipient, text):
     return json.dumps(
@@ -26,7 +22,6 @@ def get_text_message_input(recipient, text):
         }
     )
 
-
 def send_message(data):
     headers = {
         "Content-type": "application/json",
@@ -34,8 +29,6 @@ def send_message(data):
     }
 
     url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
-
-    print("Intentando mandar mensaje conformado por: ", data)
 
     try:
         response = requests.post(
@@ -55,7 +48,6 @@ def send_message(data):
         log_http_response(response)
         return response
 
-
 def process_text_for_whatsapp(text):
     # Remove brackets
     pattern = r"\【.*?\】"
@@ -73,11 +65,6 @@ def process_text_for_whatsapp(text):
 
     return whatsapp_style_text
 
-
-def generate_response_upper(response):
-    return response.upper()
-
-
 def process_whatsapp_message(body):
     wa_id = body["entry"][0]["changes"][0]["value"]["contacts"][0]["wa_id"]
     name = body["entry"][0]["changes"][0]["value"]["contacts"][0]["profile"]["name"]
@@ -86,18 +73,17 @@ def process_whatsapp_message(body):
 
     # TODO: Esto esta mal pero hasta no agregar testers o cambiar a live el proyecto no se puede hacer si no es asi
     if wa_id.startswith("54911"):
-        wa_id = wa_id.replace("54911", "5411")
+        new_wa_id = wa_id.replace("54911", "5411")
+    else:
+        new_wa_id = wa_id
 
-    # OpenAI Integration (Si descimentamos esto arranca a cobrar en usd :()
-    response = generate_response(message_body, wa_id, name)
-    #intrpretar la respuesta de chatgpt y ver como la acoplamos al conportamiento quenostros necetiasmos
+    response = generateAIResponse(message_body, new_wa_id, name)
+    if hasJsonInside(response):
+        response = stringToAction(getOnlyJsonFrom(response), wa_id)
+
     response = process_text_for_whatsapp(response)
-
-    data = get_text_message_input(wa_id, response)
-    print("CON WAID que vino en el mensaje: ", data)
-
+    data = get_text_message_input(new_wa_id, response)
     send_message(data)
-
 
 def is_valid_whatsapp_message(body):
     """

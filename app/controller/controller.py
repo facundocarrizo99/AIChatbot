@@ -27,6 +27,7 @@ class UsuarioController:
     def agregar_usuario(self, usuario):
         try:
             usuario_dict = usuario.__dict__
+            # TODO: Validar el usuario antes de insertarlo por numero de telefono o cuit
             result = self.usuarios_collection.insert_one(usuario_dict)
             logging.info(f"Usuario insertado con _id: {result.inserted_id}")
             return str(result.inserted_id)
@@ -64,7 +65,7 @@ class UsuarioController:
             logging.error(f"Error al modificar usuario: {e}")
             return False
         
-    def agregar_cliente_a_monotributista(self, telefono, cliente_data):
+    def agregar_cliente_a_monotributista(self, telefono, cliente):
         """
         Agrega un cliente a la lista de clientes de un Monotributista.
         - telefono: El telefono del Monotributista (str).
@@ -72,20 +73,11 @@ class UsuarioController:
         """
         try:
             # Verificar que el Monotributista existe
+            # TODO corregir o validar que la busqueda este funcionando bien
             monotributista = self.usuarios_collection.find_one({"telefono": telefono})
             if not monotributista or monotributista.get("categoria_monotributo") is None:
                 logging.error("El usuario no es un Monotributista o no existe.")
                 return False
-
-            # Crear el objeto Cliente
-            cliente = Cliente(
-                nombreCompleto=cliente_data["nombreCompleto"],
-                telefono=cliente_data["telefono"],
-                email=cliente_data["email"],
-                condicionIva=cliente_data["condicionIva"],
-                cuit=cliente_data["cuit"],
-                domicilio=cliente_data["domicilio"]
-            )
 
             # Verificar si el cliente ya existe (por CUIT o email)
             cliente_existente = self.usuarios_collection.find_one({
