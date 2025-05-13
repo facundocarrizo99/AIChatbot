@@ -26,11 +26,24 @@ class UsuarioController:
 
     def agregar_usuario(self, usuario):
         try:
+            # Verificar si el usuario ya existe por teléfono o CUIT
+            usuario_existente = self.usuarios_collection.find_one({
+                "$or": [
+                    {"telefono": usuario.telefono},
+                    {"cuit": usuario.cuit}
+                ]
+            })
+
+            if usuario_existente:
+                logging.info("El usuario ya existe en la colección.")
+                return str(usuario_existente.get("_id"))
+
+            # Insertar el nuevo usuario
             usuario_dict = usuario.__dict__
-            # TODO: Validar el usuario antes de insertarlo por numero de telefono o cuit
             result = self.usuarios_collection.insert_one(usuario_dict)
             logging.info(f"Usuario insertado con _id: {result.inserted_id}")
             return str(result.inserted_id)
+
         except Exception as e:
             logging.error(f"Error al insertar usuario: {e}")
             return None
@@ -73,40 +86,59 @@ class UsuarioController:
         """
         try:
             # Verificar que el Monotributista existe
-            # TODO corregir o validar que la busqueda este funcionando bien
             monotributista = self.usuarios_collection.find_one({"telefono": telefono})
             if not monotributista or monotributista.get("categoria_monotributo") is None:
                 logging.error("El usuario no es un Monotributista o no existe.")
                 return False
 
-            # Verificar si el cliente ya existe (por CUIT o email)
-            cliente_existente = self.usuarios_collection.find_one({
-                "$or": [
-                    {"cuit": cliente.cuit},
-                    {"email": cliente.email}
-                ]
-            })
+            # Verificar si el cliente ya existe en la lista del Monotributista
+            if any(c.get("cuit") == cliente.cuit or c.get("email") == cliente.email for c in monotributista.get("clientes", [])):
+                logging.info("El cliente ya existe en la lista del Monotributista.")
+                return True
 
-            if cliente_existente:
-                logging.info("El cliente ya existe en la base de datos.")
-                cliente_completo = cliente_existente
-            else:
-                # Agregar el cliente a la base de datos
-                cliente_id = self.agregar_usuario(cliente)
-                cliente_completo = self.usuarios_collection.find_one({"_id": ObjectId(cliente_id)})
-
-            # Agregar el cliente completo a la lista del Monotributista
+            # Agregar el cliente directamente a la lista del Monotributista
             self.usuarios_collection.update_one(
                 {"telefono": telefono},
-                {"$addToSet": {"clientes": cliente_completo}}  # Guardar el cliente completo
+                {"$addToSet": {"clientes": cliente}}  # Guardar el cliente directamente
             )
+
             logging.info("Cliente agregado a la lista del Monotributista.")
             return True
 
         except Exception as e:
             logging.error(f"Error al agregar cliente al Monotributista: {e}")
             return False
-    
+    def agregar_cliente_a_monotributista(self, telefono, cliente):
+        """
+        Agrega un cliente a la lista de clientes de un Monotributista.
+        - telefono: El telefono del Monotributista (str).
+        - cliente_data: Diccionario con los datos del cliente.
+        """
+        try:
+            # Verificar que el Monotributista existe
+            monotributista = self.usuarios_collection.find_one({"telefono": telefono})
+            if not monotributista or monotributista.get("categoria_monotributo") is None:
+                logging.error("El usuario no es un Monotributista o no existe.")
+                return False
+
+            # Verificar si el cliente ya existe en la lista del Monotributista
+            if any(c.get("cuit") == cliente.cuit or c.get("email") == cliente.email for c in monotributista.get("clientes", [])):
+                logging.info("El cliente ya existe en la lista del Monotributista.")
+                return True
+
+            # Agregar el cliente directamente a la lista del Monotributista
+            self.usuarios_collection.update_one(
+                {"telefono": telefono},
+                {"$addToSet": {"clientes": cliente}}  # Guardar el cliente directamente
+            )
+
+            logging.info("Cliente agregado a la lista del Monotributista.")
+            return True
+
+        except Exception as e:
+            logging.error(f"Error al agregar cliente al Monotributista: {e}")
+            return False
+
     def buscar_cliente_por_nombre(self, telefono, nombre_completo):
         return self._buscar_cliente(telefono, {"nombreCompleto": nombre_completo})
 
