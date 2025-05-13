@@ -27,6 +27,7 @@ class UsuarioController:
     def agregar_usuario(self, usuario):
         try:
             usuario_dict = usuario.__dict__
+            # TODO: Validar el usuario antes de insertarlo por numero de telefono o cuit
             result = self.usuarios_collection.insert_one(usuario_dict)
             logging.info(f"Usuario insertado con _id: {result.inserted_id}")
             return str(result.inserted_id)
@@ -72,6 +73,7 @@ class UsuarioController:
         """
         try:
             # Verificar que el Monotributista existe
+            # TODO corregir o validar que la busqueda este funcionando bien
             monotributista = self.usuarios_collection.find_one({"telefono": telefono})
             if not monotributista or monotributista.get("categoria_monotributo") is None:
                 logging.error("El usuario no es un Monotributista o no existe.")

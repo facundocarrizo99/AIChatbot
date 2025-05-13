@@ -1,7 +1,7 @@
 import json
 import logging
 from app.services.openai_service import generateAIResponse
-from string_utils import getOnlyJsonFrom, hasJsonInside, stringToAction
+from app.utils.string_utils import getOnlyJsonFrom, hasJsonInside, stringToAction
 import re
 import requests
 from flask import current_app, jsonify
@@ -29,8 +29,6 @@ def send_message(data):
     }
 
     url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
-
-    print("Intentando mandar mensaje conformado por: ", data)
 
     try:
         response = requests.post(
@@ -77,17 +75,12 @@ def process_whatsapp_message(body):
     if wa_id.startswith("54911"):
         wa_id = wa_id.replace("54911", "5411")
 
-    #Si es monotributista tengo que saber antes de crear
-
     response = generateAIResponse(message_body, wa_id, name)
     if hasJsonInside(response):
-        response = stringToAction(getOnlyJsonFrom(response))
+        response = stringToAction(getOnlyJsonFrom(response), wa_id)
 
     response = process_text_for_whatsapp(response)
-
     data = get_text_message_input(wa_id, response)
-    print("CON WAID que vino en el mensaje: ", data)
-
     send_message(data)
 
 def is_valid_whatsapp_message(body):
