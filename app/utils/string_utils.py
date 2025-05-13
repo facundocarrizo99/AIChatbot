@@ -50,6 +50,7 @@ def stringToAction(json, ownerPhone):
     # find on json attribute type the object to be processed
     type = json.get("type")
     print('El tipo de objeto recibido es: ',type)
+    print('El owner phone es: ', ownerPhone)
     #TODO agregar handelleo de errores para cuando la response no es correcta en la bd
     if type == "client":
         # process client

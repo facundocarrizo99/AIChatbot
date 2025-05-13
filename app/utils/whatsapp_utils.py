@@ -73,14 +73,16 @@ def process_whatsapp_message(body):
 
     # TODO: Esto esta mal pero hasta no agregar testers o cambiar a live el proyecto no se puede hacer si no es asi
     if wa_id.startswith("54911"):
-        wa_id = wa_id.replace("54911", "5411")
+        new_wa_id = wa_id.replace("54911", "5411")
+    else:
+        new_wa_id = wa_id
 
-    response = generateAIResponse(message_body, wa_id, name)
+    response = generateAIResponse(message_body, new_wa_id, name)
     if hasJsonInside(response):
         response = stringToAction(getOnlyJsonFrom(response), wa_id)
 
     response = process_text_for_whatsapp(response)
-    data = get_text_message_input(wa_id, response)
+    data = get_text_message_input(new_wa_id, response)
     send_message(data)
 
 def is_valid_whatsapp_message(body):
