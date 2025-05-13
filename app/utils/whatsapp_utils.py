@@ -1,10 +1,12 @@
 import json
 import logging
-# from app.services.openai_service import generate_response
+from app.services.openai_service import generate_response
 import re
 
 import requests
 from flask import current_app, jsonify
+
+# from start.whatsapp_quickstart import RECIPIENT_WAID
 
 
 def log_http_response(response):
@@ -25,11 +27,6 @@ def get_text_message_input(recipient, text):
     )
 
 
-def generate_response(response):
-    # Return text in uppercase
-    return response.upper()
-
-
 def send_message(data):
     headers = {
         "Content-type": "application/json",
@@ -37,6 +34,8 @@ def send_message(data):
     }
 
     url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
+
+    print("Intentando mandar mensaje conformado por: ", data)
 
     try:
         response = requests.post(
@@ -47,7 +46,7 @@ def send_message(data):
         logging.error("Timeout occurred while sending message")
         return jsonify({"status": "error", "message": "Request timed out"}), 408
     except (
-        requests.RequestException
+            requests.RequestException
     ) as e:  # This will catch any general request exception
         logging.error(f"Request failed due to: {e}")
         return jsonify({"status": "error", "message": "Failed to send message"}), 500
@@ -75,23 +74,28 @@ def process_text_for_whatsapp(text):
     return whatsapp_style_text
 
 
+def generate_response_upper(response):
+    return response.upper()
+
+
 def process_whatsapp_message(body):
     wa_id = body["entry"][0]["changes"][0]["value"]["contacts"][0]["wa_id"]
     name = body["entry"][0]["changes"][0]["value"]["contacts"][0]["profile"]["name"]
-
     message = body["entry"][0]["changes"][0]["value"]["messages"][0]
     message_body = message["text"]["body"]
 
-    print(body)
+    # TODO: Esto esta mal pero hasta no agregar testers o cambiar a live el proyecto no se puede hacer si no es asi
+    if wa_id.startswith("54911"):
+        wa_id = wa_id.replace("54911", "5411")
 
-    # TODO: implement custom function here
-    response = generate_response(message_body)
+    # OpenAI Integration (Si descimentamos esto arranca a cobrar en usd :()
+    response = generate_response(message_body, wa_id, name)
+    #intrpretar la respuesta de chatgpt y ver como la acoplamos al conportamiento quenostros necetiasmos
+    response = process_text_for_whatsapp(response)
 
-    # OpenAI Integration
-    # response = generate_response(message_body, wa_id, name)
-    # response = process_text_for_whatsapp(response)
+    data = get_text_message_input(wa_id, response)
+    print("CON WAID que vino en el mensaje: ", data)
 
-    data = get_text_message_input(current_app.config["RECIPIENT_WAID"], response)
     send_message(data)
 
 
@@ -100,10 +104,10 @@ def is_valid_whatsapp_message(body):
     Check if the incoming webhook event has a valid WhatsApp message structure.
     """
     return (
-        body.get("object")
-        and body.get("entry")
-        and body["entry"][0].get("changes")
-        and body["entry"][0]["changes"][0].get("value")
-        and body["entry"][0]["changes"][0]["value"].get("messages")
-        and body["entry"][0]["changes"][0]["value"]["messages"][0]
+            body.get("object")
+            and body.get("entry")
+            and body["entry"][0].get("changes")
+            and body["entry"][0]["changes"][0].get("value")
+            and body["entry"][0]["changes"][0]["value"].get("messages")
+            and body["entry"][0]["changes"][0]["value"]["messages"][0]
     )
