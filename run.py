@@ -1,5 +1,5 @@
+from flask import Flask, jsonify
 import logging
-
 from app import create_app
 
 app = create_app()
