@@ -73,6 +73,8 @@ def generateAIResponse(message_body, wa_id, name):
         store_thread(wa_id, thread.id)
         thread_id = thread.id
 
+    #si el thread es nulo entonces podriamos asumir que nunca nos hablo y como es un cliente nuevo le podemos ofrecer info base
+
     # Otherwise, retrieve the existing thread
     else:
         logging.info(f"Retrieving existing thread for {name} with wa_id {wa_id}")
