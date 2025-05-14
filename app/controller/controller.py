@@ -43,7 +43,7 @@ class UsuarioController:
             result = self.usuarios_collection.insert_one(usuario_dict)
             logging.info(f"Usuario insertado con _id: {result.inserted_id}")
             return str(result.inserted_id)
-
+          
         except Exception as e:
             logging.error(f"Error al insertar usuario: {e}")
             return None
@@ -90,7 +90,6 @@ class UsuarioController:
             if not monotributista or monotributista.get("categoria_monotributo") is None:
                 logging.error("El usuario no es un Monotributista o no existe.")
                 return False
-
             # Verificar si el cliente ya existe en la lista del Monotributista
             if any(c.get("cuit") == cliente.cuit or c.get("email") == cliente.email for c in monotributista.get("clientes", [])):
                 logging.info("El cliente ya existe en la lista del Monotributista.")
@@ -131,7 +130,6 @@ class UsuarioController:
                 {"telefono": telefono},
                 {"$addToSet": {"clientes": cliente}}  # Guardar el cliente directamente
             )
-
             logging.info("Cliente agregado a la lista del Monotributista.")
             return True
 
