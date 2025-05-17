@@ -1,3 +1,4 @@
+'''
 class Usuario:
     def __init__(self, nombreCompleto, telefono, email, condicionIva, cuit, domicilio):
         self.nombreCompleto = nombreCompleto
@@ -20,3 +21,4 @@ class Monotributista(Usuario):
 class Cliente(Usuario):
     def __init__(self, nombreCompleto, telefono, email, condicionIva, cuit, domicilio):
         super().__init__(nombreCompleto, telefono, email, condicionIva, cuit, domicilio)
+'''
