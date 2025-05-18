@@ -1,8 +1,8 @@
 from app.services.cliente_service import ClienteService
 
 class ClienteController:
-    def __init__(self, mongo_uri, db_name):
-        self.service = ClienteService(mongo_uri, db_name)
+    def __init__(self):
+        self.service = ClienteService()
 
     def crear_cliente(self, datos):
         return self.service.agregar_cliente(datos)

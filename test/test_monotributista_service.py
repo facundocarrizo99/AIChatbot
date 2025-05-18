@@ -5,11 +5,9 @@ from dotenv import load_dotenv
 from app.services.monotributista_service import MonotributistaService
 from bson import ObjectId
 
+monotribustistaService = MonotributistaService()
 
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)  # add assertion here
-
+class MyTestCase(unittest.TestCase): # add assertion here
     def test_agregar_monotributista(self):
         datos = {
             "nombreCompleto": "Juan Test",
@@ -23,16 +21,16 @@ class MyTestCase(unittest.TestCase):
             "actividad": "Servicios",
             "punto_venta": "002"
         }
-        inserted_id = MonotributistaService.agregar_monotributista(datos)
+        inserted_id = MonotributistaService.agregar_monotributista(monotribustistaService, datos)
         assert ObjectId.is_valid(inserted_id)
 
     def test_buscar_por_telefono(self):
-        monotributista = MonotributistaService.buscar_por_telefono("test_telefono")
+        monotributista = MonotributistaService.buscar_por_telefono(monotribustistaService,"test_telefono")
         assert monotributista is not None
         assert monotributista["nombreCompleto"] == "Juan Test"
 
     def test_modificar_monotributista(self):
-        modificado = MonotributistaService.modificar_monotributista("test_telefono", {"razonSocial": "Nueva Razón"})
+        modificado = MonotributistaService.modificar_monotributista(monotribustistaService,"test_telefono", {"razonSocial": "Nueva Razón"})
         assert modificado
 
     def test_agregar_cliente(self):
@@ -42,20 +40,19 @@ class MyTestCase(unittest.TestCase):
             "email": "cliente@uno.com",
             "condicionIva": "Consumidor Final",
             "cuit": "20999999990",
-            "domicilio": "Cliente 123",
-            "razonSocial": "Cliente Uno SRL"
+            "domicilio": "Cliente 123"
         }
-        result = MonotributistaService.agregar_cliente_a_monotributista("test_telefono", cliente_data)
+        result = MonotributistaService.agregar_cliente_a_monotributista(monotribustistaService,"test_telefono", cliente_data)
         assert result
 
     def test_modificar_cliente(self):
-        modificado = MonotributistaService.modificar_cliente_de_monotributista(
+        modificado = MonotributistaService.modificar_cliente_de_monotributista(monotribustistaService,
             "test_telefono",
             {"telefono": "cliente_test"},
-            {"razonSocial": "Cliente Uno Actualizado"}
+            {"nombreCompleto": "Cliente Uno Actualizado"}
         )
         assert modificado
 
     def test_eliminar_monotributista(self):
-        eliminado = MonotributistaService.eliminar_monotributista("test_telefono")
+        eliminado = MonotributistaService.eliminar_monotributista(monotribustistaService, "test_telefono")
         assert eliminado
