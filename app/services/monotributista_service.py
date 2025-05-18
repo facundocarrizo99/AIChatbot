@@ -6,7 +6,8 @@ from app.config.database import db, db_test
 
 class MonotributistaService:
     def __init__(self):
-        self.collection = db["Usuario"]
+        #self.collection = db["Usuario"]
+        self.collection = db_test["Usuario"]
 
     def agregar_monotributista(self, datos):
         monotributista = Monotributista(**datos)

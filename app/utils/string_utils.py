@@ -101,4 +101,6 @@ def convertJSONToMonotributista(json):
         actividad=json.get("activity"),
         punto_venta=json.get("point_of_sale")
     )
+    
     return monotributista
+
