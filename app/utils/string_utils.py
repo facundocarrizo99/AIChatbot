@@ -1,7 +1,8 @@
 import json
 import re
 from app.controller.controller import UsuarioController
-from app.db.models import Monotributista, Cliente
+from app.models.monotributista import Monotributista
+from app.models.cliente import Cliente
 
 usuarioControlerSingleton = UsuarioController()
 
@@ -52,6 +53,7 @@ def stringToAction(json, ownerPhone):
     print('El tipo de objeto recibido es: ',type)
     print('El owner phone es: ', ownerPhone)
     #TODO agregar handelleo de errores para cuando la response no es correcta en la bd
+    #TODO ver si una persona esta registrada o no
     if type == "client":
         # process client
         UsuarioController.agregar_cliente_a_monotributista(usuarioControlerSingleton, ownerPhone, convertJSONToCliente(json))

@@ -3,7 +3,7 @@ import logging
 from pymongo import MongoClient
 from bson import ObjectId  # Importar ObjectId para manejar _id de MongoDB
 from dotenv import load_dotenv
-from app.db.models import Monotributista, Cliente
+from app.models.monotributista import Monotributista
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -13,7 +13,19 @@ load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
 
+from app.models.usuario import Usuario
+#from app.views.usuario_view import UsuarioView
+
+from app.controller.monotributista_controller import MonotributistaController
+from app.controller.cliente_controller import ClienteController
+
 class UsuarioController:
+    def __init__(self, mongo_uri, db_name):
+        self.monotributista_controller = MonotributistaController(mongo_uri, db_name)
+        self.cliente_controller = ClienteController()
+    def __init__(self, mongo_uri, db_name):
+        self.usuario_model = Usuario(mongo_uri, db_name)
+        self.view = UsuarioView()
     def __init__(self):
         try:
             self.client = MongoClient(MONGO_URI)
