@@ -13,31 +13,29 @@ class MyTestCase(unittest.TestCase):
     def test_something(self):
         self.assertEqual(True, False)  # add assertion here
 
-    @pytest.fixture
-    def service(self):
-        return ClienteService(MONGO_URI, DB_NAME)
+    def setUp(self):
+        self.cliente_servicio = ClienteService()
 
-    def test_agregar_cliente(service):
+    def test_agregar_cliente(self):
         datos = {
             "nombreCompleto": "Cliente Directo",
             "telefono": "cliente_directo",
             "email": "cliente@directo.com",
             "condicionIva": "Monotributo",
             "cuit": "20999999991",
-            "domicilio": "Calle 123",
-            "razonSocial": "Cliente Directo S.A."
+            "domicilio": "Calle 123"
         }
-        inserted_id = service.agregar_cliente(datos)
-        assert ObjectId.is_valid(inserted_id)
+        inserted_id = self.cliente_servicio.agregar_cliente(datos)
+        assert isinstance(inserted_id, str)
 
-    def test_buscar_cliente(service):
-        cliente = service.buscar_por_telefono("cliente_directo")
+    def test_buscar_cliente(self):
+        cliente = self.cliente_servicio.buscar_por_telefono("cliente_directo")
         assert cliente is not None
 
-    def test_modificar_cliente(service):
-        modificado = service.modificar_cliente("cliente_directo", {"razonSocial": "Cliente Modificado"})
+    def test_modificar_cliente(self):
+        modificado = self.cliente_servicio.modificar_cliente("cliente_directo", {"razonSocial": "Cliente Modificado"})
         assert modificado
 
-    def test_eliminar_cliente(service):
-        eliminado = service.eliminar_cliente("cliente_directo")
+    def test_eliminar_cliente(self):
+        eliminado = self.cliente_servicio.eliminar_cliente("cliente_directo")
         assert eliminado

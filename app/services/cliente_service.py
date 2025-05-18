@@ -1,12 +1,13 @@
 import logging
 from pymongo import MongoClient
 from app.models.cliente import Cliente
-from app.config.database import db
+from app.config.database import db,db_test
 
 class ClienteService:
     def __init__(self):
-        self.collection = db["Usuario"]
-
+        #self.collection = db["Usuario"]
+        self.collection = db_test["Usuario"]
+        
     def agregar_cliente(self, datos):
         cliente = Cliente(**datos)
         return str(self.collection.insert_one(cliente.__dict__).inserted_id)
