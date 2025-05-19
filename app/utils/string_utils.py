@@ -1,10 +1,10 @@
 import json
 import re
-from app.controller.controller import UsuarioController
+from app.controller.monotributista_controller import MonotributistaController
 from app.models.monotributista import Monotributista
 from app.models.cliente import Cliente
 
-usuarioControlerSingleton = UsuarioController()
+monotributistaController = MonotributistaController()
 
 def getOnlyJsonFrom(text):
     best_block = ''
@@ -55,17 +55,17 @@ def stringToAction(json, ownerPhone):
     #TODO agregar handelleo de errores para cuando la response no es correcta en la bd
     #TODO ver si una persona esta registrada o no
     if type == "client":
-        # process client
-        UsuarioController.agregar_cliente_a_monotributista(usuarioControlerSingleton, ownerPhone, convertJSONToCliente(json))
+        # poder identificar si es alta - baja - modificacion - consulta
+        MonotributistaController.agregar_cliente(monotributistaController, ownerPhone, convertJSONToCliente(json))
         newResponse = 'Hemos agregado tu cliente a la lista de clientes de tu monotributista, ahora puedes agregar más clientes! O solicitar una nueva factura!'
         pass
     elif type == "monotributista":
-        # process invoice
-        UsuarioController.agregar_usuario(usuarioControlerSingleton, convertJSONToMonotributista(json))
+        # poder identificar si es alta - baja - modificacion - consulta
+        MonotributistaController.agregar_cliente(monotributistaController, convertJSONToMonotributista(json))
         newResponse = 'Te hemos agregado como monotributista, ahora puedes agregar clientes a tu lista!'
         pass
     elif type == "factura":
-        # process payment
+        # poder crear la factura y hacer todos los pasos correspondientes - pero tambien respondert que etstamos procesando la soliictud
         newResponse = 'Todavia no podemos emitir facturas, pero pronto lo haremos!'
         pass
     else:

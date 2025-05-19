@@ -4,9 +4,11 @@ from app.models.cliente import Cliente
 from app.config.database import db,db_test
 
 class ClienteService:
-    def __init__(self):
-        #self.collection = db["Usuario"]
-        self.collection = db_test["Usuario"]
+    def __init__(self, is_test=False):
+        if is_test:
+            self.collection = db_test["Usuario"]
+        else:
+            self.collection = db["Usuario"]
         
     def agregar_cliente(self, datos):
         cliente = Cliente(**datos)

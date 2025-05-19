@@ -1,11 +1,7 @@
 import unittest
-import pytest
-import os
-from dotenv import load_dotenv
 from app.services.monotributista_service import MonotributistaService
-from bson import ObjectId
 
-monotribustistaService = MonotributistaService()
+monotribustistaService = MonotributistaService(True)
 
 class MyTestCase(unittest.TestCase): # add assertion here
     def test_agregar_monotributista(self):
