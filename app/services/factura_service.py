@@ -9,6 +9,14 @@ class FacturaService:
             self.facturas_collection = db["Factura"]
 
     def crear_factura(self, datos_factura):
+
+        factura_existente = self.facturas_collection.find_one({"numero": datos_factura["numero"]})
+
+        if factura_existente:
+            ultima_factura = self.facturas_collection.find().sort("numero", -1).limit(1)
+            ultimo_numero = int(ultima_factura[0]["numero"]) if ultima_factura else 0
+            datos_factura["numero"] = str(ultimo_numero + 1)
+
         factura = Factura(**datos_factura)
         result = self.facturas_collection.insert_one(factura.to_dict())
         return str(result.inserted_id)

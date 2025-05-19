@@ -1,0 +1,4 @@
+{
+  "Facturar": ["factura", "emitir", "producto", "cantidad", "precio", "total", "agregar"],
+  "Registrar": ["registrar", "cliente", "alta", "baja", "modificar", "consulta"]
+}

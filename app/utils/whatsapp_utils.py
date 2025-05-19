@@ -1,7 +1,7 @@
 import json
 import logging
-from app.services.openai_service import generateAIResponse
-from app.utils.string_utils import getOnlyJsonFrom, hasJsonInside, stringToAction
+from app.services.openai_service import generate_ai_response
+from app.utils.string_utils import getOnlyJsonFrom, hasJsonInside, string_to_action
 import re
 import requests
 from flask import current_app, jsonify
@@ -77,9 +77,9 @@ def process_whatsapp_message(body):
     else:
         new_wa_id = wa_id
 
-    response = generateAIResponse(message_body, new_wa_id, name)
+    response = generate_ai_response(message_body, new_wa_id, name)
     if hasJsonInside(response):
-        response = stringToAction(getOnlyJsonFrom(response), wa_id)
+        response = string_to_action(getOnlyJsonFrom(response), wa_id)
 
     response = process_text_for_whatsapp(response)
     data = get_text_message_input(new_wa_id, response)
