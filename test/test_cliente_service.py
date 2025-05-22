@@ -14,7 +14,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(True, False)  # add assertion here
 
     def setUp(self):
-        self.cliente_servicio = ClienteService()
+        self.cliente_servicio = ClienteService(True)
 
     def test_agregar_cliente(self):
         datos = {

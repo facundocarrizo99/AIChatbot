@@ -6,11 +6,15 @@ import time
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from app.utils.string_utils import check_string_for_specific_words
+
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
+OPENAI_ASSISTANT_ID_ORIGINAL = os.getenv("OPENAI_ASSISTANT_ID_ORIGINAL")
+OPENAI_ASSISTANT_ID_FACTURAS = os.getenv("OPENAI_ASSISTANT_ID_FACTURAS")
+OPENAI_ASSISTANT_ID_REGISTRAR = os.getenv("OPENAI_ASSISTANT_ID_REGISTRAR")
+OPENAI_ASSISTANT_ID_GENERAL = os.getenv("OPENAI_ASSISTANT_ID_GENERAL")
 client = OpenAI(api_key=OPENAI_API_KEY)
-
 
 def create_assistant(file):
     """
@@ -37,15 +41,14 @@ def store_thread(wa_id, thread_id):
         threads_shelf[wa_id] = thread_id
 
 
-def run_assistant(thread, name):
-    # Retrieve the Assistant
-    assistant = client.beta.assistants.retrieve(OPENAI_ASSISTANT_ID)
+def run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_GENERAL):
+    assistant = client.beta.assistants.retrieve(assistant_id)
 
     # Run the assistant
     run = client.beta.threads.runs.create(
         thread_id=thread.id,
         assistant_id=assistant.id,
-        # instructions=f"You are having a conversation with {name}",
+        instructions=f"You are having a conversation with {name}",
     )
 
     # Wait for completion
@@ -61,8 +64,7 @@ def run_assistant(thread, name):
     logging.info(f"Generated message: {new_message}")
     return new_message
 
-
-def generateAIResponse(message_body, wa_id, name):
+def generate_ai_response(message_body, wa_id, name):
     # Check if there is already a thread_id for the wa_id
     thread_id = check_if_thread_exists(wa_id)
 
@@ -72,7 +74,6 @@ def generateAIResponse(message_body, wa_id, name):
         thread = client.beta.threads.create()
         store_thread(wa_id, thread.id)
         thread_id = thread.id
-
     # Otherwise, retrieve the existing thread
     else:
         logging.info(f"Retrieving existing thread for {name} with wa_id {wa_id}")
@@ -85,7 +86,15 @@ def generateAIResponse(message_body, wa_id, name):
         content=message_body,
     )
 
+    actions = {
+        "Registrar": run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_REGISTRAR),
+        "Facturar": run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_FACTURAS),
+        "General": run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_GENERAL),
+        "Original": run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_ORIGINAL),
+    }
+
     # Run the assistant and get the new message
-    new_message = run_assistant(thread, name)
+    categoria = check_string_for_specific_words(message_body, wa_id)
+    new_message = actions.get(categoria, lambda: print("Categoría no reconocida"))
 
     return new_message

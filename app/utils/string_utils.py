@@ -1,10 +1,13 @@
 import json
 import re
-from app.controller.controller import UsuarioController
+
+from app.controller.factura_controller import FacturaController
+from app.controller.monotributista_controller import MonotributistaController
 from app.models.monotributista import Monotributista
 from app.models.cliente import Cliente
 
-usuarioControlerSingleton = UsuarioController()
+monotributistaController = MonotributistaController()
+facturaController = FacturaController()
 
 def getOnlyJsonFrom(text):
     best_block = ''
@@ -47,33 +50,29 @@ def hasJsonInside(text):
 
     return False
 
-def stringToAction(json, ownerPhone):
+def string_to_action(string_json, owner_phone):
     # find on json attribute type the object to be processed
-    type = json.get("type")
-    print('El tipo de objeto recibido es: ',type)
-    print('El owner phone es: ', ownerPhone)
-    #TODO agregar handelleo de errores para cuando la response no es correcta en la bd
-    #TODO ver si una persona esta registrada o no
-    if type == "client":
-        # process client
-        UsuarioController.agregar_cliente_a_monotributista(usuarioControlerSingleton, ownerPhone, convertJSONToCliente(json))
-        newResponse = 'Hemos agregado tu cliente a la lista de clientes de tu monotributista, ahora puedes agregar más clientes! O solicitar una nueva factura!'
-        pass
-    elif type == "monotributista":
-        # process invoice
-        UsuarioController.agregar_usuario(usuarioControlerSingleton, convertJSONToMonotributista(json))
-        newResponse = 'Te hemos agregado como monotributista, ahora puedes agregar clientes a tu lista!'
-        pass
-    elif type == "factura":
-        # process payment
-        newResponse = 'Todavia no podemos emitir facturas, pero pronto lo haremos!'
-        pass
-    else:
-        # process other
-        newResponse = 'Hubo un error, no hemos podido procesar tu mensaje, por favor intenta nuevamente!'
-        pass
+    actions = {
+        "client.add": MonotributistaController.agregar_cliente(monotributistaController, owner_phone, convertJSONToCliente(string_json)),
+        #"client.modify": MonotributistaController.modificar_cliente(monotributistaController, ownerPhone, convertJSONToCliente(json)),
+        #"client.delete": MonotributistaController.eliminar_monotributista(monotributistaController, ownerPhone),
+        #"client.search": MonotributistaController.obtener_por_telefono(monotributistaController, ownerPhone, convertJSONToCliente(json)),
+        "monotributista.add": MonotributistaController.crear_monotributista(monotributistaController, convertJSONToCliente(string_json)),
+        "monotributista.modify": MonotributistaController.modificar_monotributista(monotributistaController, owner_phone, convertJSONToCliente(string_json)),
+        "monotributista.delete": MonotributistaController.eliminar_monotributista(monotributistaController, owner_phone),
+        "monotributista.searchByPhone": MonotributistaController.obtener_por_telefono(monotributistaController, owner_phone),
+        "invoice.add": FacturaController.crear_factura(facturaController, convertJSONToCliente(string_json)),
+        #"invoice.modify": FacturaController.modificar_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
+        #"invoice.delete": FacturaController.eliminar_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
+        #"invoice.searchBy": FacturaController.obtener_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
+    }
 
-    return newResponse
+    action = string_json.get("actionToBeDone")
+    print('El tipo de objeto recibido es: ',type)
+    print('El owner phone es: ', owner_phone)
+    new_response = actions.get(action, lambda: print("no mapped action"))
+
+    return new_response
 
 def convertJSONToCliente(json):
     # Convertir el JSON a un objeto Cliente
@@ -104,3 +103,24 @@ def convertJSONToMonotributista(json):
     
     return monotributista
 
+def check_string_for_specific_words(message, wa_id):
+    """
+    Recorre un texto y determina a qué categoría pertenece según las listas de palabras clave.
+    """
+    monotributista = monotributistaController.obtener_por_telefono(wa_id)
+    if monotributista is not None:
+        return 'General'
+
+    words_list = cargar_listas_palabras()
+    message = message.lower()
+
+    for category, palabras_clave in words_list.items():
+        for palabra in palabras_clave:
+            if palabra.lower() in message:
+                return category  # Podés cambiar esto por otra lógica
+
+    return 'Original'
+
+def cargar_listas_palabras(ruta="palabras_clave.json"):
+    with open(ruta, "r", encoding="utf-8") as archivo:
+        return json.load(archivo)
