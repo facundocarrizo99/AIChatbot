@@ -21,3 +21,6 @@ class MonotributistaController:
 
     def modificar_cliente(self, telefono, cliente_identificador, nuevos_datos):
         return self.service.modificar_cliente_de_monotributista(telefono, cliente_identificador, nuevos_datos)
+
+    def obtener_por_cuit(self,cuit):
+        return self.service.buscar_por_cuit(cuit)
