@@ -70,7 +70,7 @@ def string_to_action(string_json, owner_phone):
                                                                                   owner_phone),
         "monotributista.searchByPhone": MonotributistaController.obtener_por_telefono(monotributistaController,
                                                                                       owner_phone),
-        "invoice.add": FacturaController.crear_factura(facturaController, convertJSONToCliente(string_json)),
+        "invoice.add": FacturaController.crear_factura(facturaController, convertJSONToCliente(string_json), owner_phone),
         #"invoice.modify": FacturaController.modificar_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
         #"invoice.delete": FacturaController.eliminar_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
         #"invoice.searchBy": FacturaController.obtener_factura(facturaController, ownerPhone, convertJSONToCliente(json)),

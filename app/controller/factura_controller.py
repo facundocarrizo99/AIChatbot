@@ -1,19 +1,43 @@
 import logging
+
+from app.controller.monotributista_controller import MonotributistaController
+from app.models.factura import Factura
+from app.models.monotributista import Monotributista
+from app.services.arca_service import ARCAService
 from app.services.factura_service import FacturaService
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from datetime import datetime
 from app.controller.cliente_controller import ClienteController
-from app.controller.monotributista_controller import MonotributistaController
+
 
 class FacturaController:
     def __init__(self):
         self.service = FacturaService()
+        self.monotributista_controler = MonotributistaController()
+        self.arca_service = ARCAService()
 
-    def crear_factura(self, datos_factura):
+    def crear_factura(self, datos_factura, tele_monotributista):
+        monotributista = Monotributista(**self.monotributista_controler.obtener_por_telefono(tele_monotributista))
+        # TODO: refactorizar para que no rompa y para que quede prolijo
+        for cliente in monotributista.clientes:
+            if cliente.nombreCompleto == datos_factura["nombreCompleto"]:
+                cliente_factura = cliente
+            elif cliente.cuit == datos_factura["cuit"]:
+                cliente_factura = cliente
+            elif cliente.email == datos_factura["email"]:
+                cliente_factura = cliente
+            elif cliente.telefono == datos_factura["telefono"]:
+                cliente_factura = cliente
+            else:
+                cliente_factura = None
+
+        factura = Factura.completar_factura(datos_factura, monotributista, cliente_factura)
+        factura = self.arca_service.get_cae(factura)
+
         try:
-            return self.service.crear_factura(datos_factura)
+            return self.service.crear_factura(factura)
         except Exception as e:
             logging.error(f"Error al crear factura: {e}")
             return None

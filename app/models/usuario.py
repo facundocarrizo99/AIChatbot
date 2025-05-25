@@ -10,5 +10,6 @@ class Usuario(ABC):
         self.condicionIva = condicionIva
         self.cuit = cuit
         self.domicilio = domicilio
+        self.razonSocial = None
         logging.info("Conexión a la base de datos exitosa.")
 

@@ -8,16 +8,15 @@ class FacturaService:
         else:
             self.facturas_collection = db["Factura"]
 
-    def crear_factura(self, datos_factura):
-        # TODO: Estamos recibiendo un json, para convertirlo en objceto (L20), para convertiro en diccionario (L21) ESTA MALLL
-        factura_existente = self.facturas_collection.find_one({"numero": datos_factura["numero"]})
+    def crear_factura(self, factura):
+        # TODO: ROMPE el TEST
+        factura_existente = self.facturas_collection.find_one({"numero": factura.numero})
 
         if factura_existente:
             ultima_factura = self.facturas_collection.find().sort("numero", -1).limit(1)
             ultimo_numero = int(ultima_factura[0]["numero"]) if ultima_factura else 0
-            datos_factura["numero"] = str(ultimo_numero + 1)
+            factura.numero = str(ultimo_numero + 1)
 
-        factura = Factura(**datos_factura)
         result = self.facturas_collection.insert_one(factura.to_dict())
         return str(result.inserted_id)
 
