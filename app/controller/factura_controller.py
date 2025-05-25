@@ -9,9 +9,7 @@ from app.controller.monotributista_controller import MonotributistaController
 
 class FacturaController:
     def __init__(self):
-        self.service = FacturaService(True) #Poner como argumento en True si esta en test
-        self.cliente_controller = ClienteController()
-        self.monotributista_controller = MonotributistaController()
+        self.service = FacturaService()
 
     def crear_factura(self, datos_factura):
         try:

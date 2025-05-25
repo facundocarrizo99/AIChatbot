@@ -9,6 +9,7 @@ from app.models.cliente import Cliente
 monotributistaController = MonotributistaController()
 facturaController = FacturaController()
 
+
 def getOnlyJsonFrom(text):
     best_block = ''
     max_length = 0
@@ -36,6 +37,7 @@ def getOnlyJsonFrom(text):
 
     return best_block  # Esto es un dict (JSON válido)
 
+
 def hasJsonInside(text):
     # Buscar todos los bloques que parecen JSON entre llaves
     blocks = re.findall(r'\{.*?\}', text, re.DOTALL)
@@ -50,17 +52,24 @@ def hasJsonInside(text):
 
     return False
 
+
 def string_to_action(string_json, owner_phone):
     # find on json attribute type the object to be processed
     actions = {
-        "client.add": MonotributistaController.agregar_cliente(monotributistaController, owner_phone, convertJSONToCliente(string_json)),
+        "client.add": MonotributistaController.agregar_cliente(monotributistaController, owner_phone,
+                                                               convertJSONToCliente(string_json)),
         #"client.modify": MonotributistaController.modificar_cliente(monotributistaController, ownerPhone, convertJSONToCliente(json)),
         #"client.delete": MonotributistaController.eliminar_monotributista(monotributistaController, ownerPhone),
         #"client.search": MonotributistaController.obtener_por_telefono(monotributistaController, ownerPhone, convertJSONToCliente(json)),
-        "monotributista.add": MonotributistaController.crear_monotributista(monotributistaController, convertJSONToCliente(string_json)),
-        "monotributista.modify": MonotributistaController.modificar_monotributista(monotributistaController, owner_phone, convertJSONToCliente(string_json)),
-        "monotributista.delete": MonotributistaController.eliminar_monotributista(monotributistaController, owner_phone),
-        "monotributista.searchByPhone": MonotributistaController.obtener_por_telefono(monotributistaController, owner_phone),
+        "monotributista.add": MonotributistaController.crear_monotributista(monotributistaController,
+                                                                            convertJSONToCliente(string_json)),
+        "monotributista.modify": MonotributistaController.modificar_monotributista(monotributistaController,
+                                                                                   owner_phone,
+                                                                                   convertJSONToCliente(string_json)),
+        "monotributista.delete": MonotributistaController.eliminar_monotributista(monotributistaController,
+                                                                                  owner_phone),
+        "monotributista.searchByPhone": MonotributistaController.obtener_por_telefono(monotributistaController,
+                                                                                      owner_phone),
         "invoice.add": FacturaController.crear_factura(facturaController, convertJSONToCliente(string_json)),
         #"invoice.modify": FacturaController.modificar_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
         #"invoice.delete": FacturaController.eliminar_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
@@ -68,11 +77,12 @@ def string_to_action(string_json, owner_phone):
     }
 
     action = string_json.get("actionToBeDone")
-    print('El tipo de objeto recibido es: ',type)
+    print('El tipo de objeto recibido es: ', type)
     print('El owner phone es: ', owner_phone)
     new_response = actions.get(action, lambda: print("no mapped action"))
 
     return new_response
+
 
 def convertJSONToCliente(json):
     # Convertir el JSON a un objeto Cliente
@@ -85,6 +95,7 @@ def convertJSONToCliente(json):
         domicilio=json.get("Address")
     )
     return cliente
+
 
 def convertJSONToMonotributista(json):
     # Convertir el JSON a un objeto Monotributista
@@ -100,8 +111,9 @@ def convertJSONToMonotributista(json):
         actividad=json.get("activity"),
         punto_venta=json.get("point_of_sale")
     )
-    
+
     return monotributista
+
 
 def check_string_for_specific_words(message, wa_id):
     """
@@ -121,6 +133,7 @@ def check_string_for_specific_words(message, wa_id):
 
     return 'Original'
 
-def cargar_listas_palabras(ruta="palabras_clave.json"):
+
+def cargar_listas_palabras(ruta="./app/config/palabras_clave.json"):
     with open(ruta, "r", encoding="utf-8") as archivo:
         return json.load(archivo)

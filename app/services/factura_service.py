@@ -9,7 +9,7 @@ class FacturaService:
             self.facturas_collection = db["Factura"]
 
     def crear_factura(self, datos_factura):
-
+        # TODO: Estamos recibiendo un json, para convertirlo en objceto (L20), para convertiro en diccionario (L21) ESTA MALLL
         factura_existente = self.facturas_collection.find_one({"numero": datos_factura["numero"]})
 
         if factura_existente:
