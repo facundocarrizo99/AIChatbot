@@ -1,4 +1,6 @@
 from datetime import datetime
+from formatter import NullWriter
+
 
 class Producto:
     def __init__(self, nombre, precio_unitario, cantidad):
@@ -23,6 +25,9 @@ class Factura:
         self.cuit_cliente = cuit_cliente
         self.productos = [p.to_dict() if isinstance(p, Producto) else p for p in productos]
         self.total = sum([p["total"] for p in self.productos])
+        self.cae = None
+        self.fecha_vencimiento_cae = None
+
 
     def to_dict(self):
         return {
