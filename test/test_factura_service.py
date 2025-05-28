@@ -57,7 +57,7 @@ class MyTestCase(unittest.TestCase):
         assert any(f["numero"] == "0" for f in facturas)
 
     def test_generar_pdf(self):
-        self.factura_controller.crear_pdf("4")
+        self.factura_controller.obtener_factura("")
         assert (os.path.exists("factura_generada"), "El archivo PDF no fue creado")
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ from app.services.monotributista_service import MonotributistaService
 
 class MonotributistaController:
     def __init__(self):
-        self.service = MonotributistaService()
+        self.service = MonotributistaService(False)
 
     def crear_monotributista(self, datos):
         return self.service.agregar_monotributista(datos)

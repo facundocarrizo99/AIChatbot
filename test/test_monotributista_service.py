@@ -26,6 +26,12 @@ class MyTestCase(unittest.TestCase): # add assertion here
         assert monotributista is not None
         assert monotributista["nombreCompleto"] == "Juan Test"
 
+    def test_buscar_por_cuit(self):
+        monotributista = monotribustistaService.buscar_por_cuit("20999999998")
+        print(monotributista)
+        assert monotributista is not None
+        assert monotributista["nombreCompleto"] == "Juan Test"
+
     def test_modificar_monotributista(self):
         modificado = monotribustistaService.modificar_monotributista("test_telefono", {"razonSocial": "Nueva Razón"})
         assert modificado
