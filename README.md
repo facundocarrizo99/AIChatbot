@@ -30,7 +30,7 @@ Antes de realizar pruebas, es necesario clonar el repositorio del proyecto y eje
 1. Clonar el repositorio:
 
 ```
-git clone https://github.com/daveebbelaar/python-whatsapp-bot.git
+git clone https://github.com/facundocarrizo99/AIChatbot
 cd python-whatsapp-bot
 ```
 
