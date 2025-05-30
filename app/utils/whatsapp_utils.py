@@ -78,6 +78,7 @@ def process_whatsapp_message(body):
         new_wa_id = wa_id
 
     response = generate_ai_response(message_body, new_wa_id, name)
+    logging.info("AI generated response created raw: " + response)
     if hasJsonInside(response):
         response = string_to_action(getOnlyJsonFrom(response), wa_id)
 

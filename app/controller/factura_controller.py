@@ -6,8 +6,6 @@ from app.models.factura import Factura
 from app.models.monotributista import Monotributista
 from app.services.arca_service import ARCAService
 from app.services.factura_service import FacturaService
-from datetime import datetime
-from app.controller.cliente_controller import ClienteController
 
 
 class FacturaController:
@@ -18,24 +16,17 @@ class FacturaController:
 
     def crear_factura(self, datos_factura, tele_monotributista):
         monotributista = Monotributista(**self.monotributista_controler.obtener_por_telefono(tele_monotributista))
-        # TODO: refactorizar para que no rompa y para que quede prolijo
-        for cliente in monotributista.clientes:
-            if cliente.nombreCompleto == datos_factura["nombreCompleto"]:
-                cliente_factura = cliente
-            elif cliente.cuit == datos_factura["cuit"]:
-                cliente_factura = cliente
-            elif cliente.email == datos_factura["email"]:
-                cliente_factura = cliente
-            elif cliente.telefono == datos_factura["telefono"]:
-                cliente_factura = cliente
-            else:
-                cliente_factura = None
+        clientes = Cliente(**monotributista.buscar_clientes_por_valor(datos_factura["client"]))
 
-        factura = Factura.completar_factura(datos_factura, monotributista, cliente_factura)
+        factura = Factura(**datos_factura)
+        factura = factura.completar_factura(monotributista, clientes)
         factura = self.arca_service.get_cae(factura)
-
+        #TODO: no va aca pero bueno
+        #pdf = factura.factura_to_pdf()
+        print(factura.to_dict())
         try:
-            return self.service.crear_factura(factura)
+            self.service.crear_factura(factura)
+            return factura
         except Exception as e:
             logging.error(f"Error al crear factura: {e}")
             return None

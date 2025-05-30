@@ -27,7 +27,7 @@ class MonotributistaService:
         return self.collection.find_one({"telefono": telefono, "categoria_monotributo": {"$exists": True}})
 
     def buscar_por_cuit(self,cuit):
-        return self.collection.find_one({"cuit": cuit})
+        return self.collection.find_one({"cuit":cuit,"categoria_monotributo": {"$exists": True}})
 
     def agregar_cliente_a_monotributista(self, telefono, cliente_data):
         monotributista = self.buscar_por_telefono(telefono)

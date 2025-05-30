@@ -1,5 +1,6 @@
 from app.config.database import db, db_test
 from app.models.factura import Factura
+from typing import Optional
 
 class FacturaService:
     def __init__(self, is_test=False):
@@ -20,8 +21,12 @@ class FacturaService:
         result = self.facturas_collection.insert_one(factura.to_dict())
         return str(result.inserted_id)
 
-    def obtener_factura_por_numero(self, numero):
-        return self.facturas_collection.find_one({"numero": numero})
+    def obtener_factura_por_numero(self, numero) -> Optional[Factura]:
+        data = self.facturas_collection.find_one({"numero": numero})
+        if data:
+            data.pop("_id", None)  # Opcional: elimina el _id si no lo vas a usar
+            return Factura.from_dict(data)
+        return None
 
     def eliminar_factura(self, numero):
         result = self.facturas_collection.delete_one({"numero": numero})

@@ -1,11 +1,13 @@
 import os
 import unittest
+
+from app.models.factura import Factura
 from app.services.factura_service import FacturaService
 from app.controller.factura_controller import FacturaController
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        self.factura_service = FacturaService(True)
+        self.factura_service = FacturaService()
         self.factura_controller = FacturaController()
         # Datos de prueba
         self.factura_test = {
@@ -57,7 +59,8 @@ class MyTestCase(unittest.TestCase):
         assert any(f["numero"] == "0" for f in facturas)
 
     def test_generar_pdf(self):
-        self.factura_controller.obtener_factura("")
+        factura = self.factura_service.obtener_factura_por_numero("0")
+        factura.factura_to_pdf()
         assert (os.path.exists("factura_generada"), "El archivo PDF no fue creado")
 
 if __name__ == '__main__':
