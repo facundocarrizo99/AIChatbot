@@ -2,6 +2,7 @@ import logging
 import os
 import shelve
 import time
+from unicodedata import category
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -41,33 +42,37 @@ def store_thread(wa_id, thread_id):
         threads_shelf[wa_id] = thread_id
 
 
-def run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_GENERAL):
+def run_assistant(thread_id, name, assistant_category):
+    assistant_id = get_assistant_id_from_category(assistant_category)
     assistant = client.beta.assistants.retrieve(assistant_id)
 
-    # Run the assistant
+    # Recuperar el thread actualizado
+    thread = client.beta.threads.retrieve(thread_id)
+
+    # Crear el run
     run = client.beta.threads.runs.create(
         thread_id=thread.id,
         assistant_id=assistant.id,
         instructions=f"You are having a conversation with {name}",
     )
 
-    # Wait for completion
-    # https://platform.openai.com/docs/assistants/how-it-works/runs-and-run-steps#:~:text=under%20failed_at.-,Polling%20for%20updates,-In%20order%20to
+    # Esperar a que termine
     while run.status != "completed":
-        # Be nice to the API
         time.sleep(0.5)
         run = client.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
 
-    # Retrieve the Messages
+    # Obtener los mensajes
     messages = client.beta.threads.messages.list(thread_id=thread.id)
-    new_message = messages.data[0].content[0].text.value
-    logging.info(f"Generated message: {new_message}")
-    return new_message
+
+    for message in messages.data:
+        if message.role == "assistant":
+            return message.content[0].text.value
+
+    return "No assistant response found."
 
 def generate_ai_response(message_body, wa_id, name):
     # Check if there is already a thread_id for the wa_id
     thread_id = check_if_thread_exists(wa_id)
-
     # If a thread doesn't exist, create one and store it
     if thread_id is None:
         logging.info(f"Creating new thread for {name} with wa_id {wa_id}")
@@ -86,15 +91,18 @@ def generate_ai_response(message_body, wa_id, name):
         content=message_body,
     )
 
-    actions = {
-        "Registrar": run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_REGISTRAR),
-        "Facturar": run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_FACTURAS),
-        "General": run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_GENERAL),
-        "Original": run_assistant(thread, name, assistant_id=OPENAI_ASSISTANT_ID_ORIGINAL),
-    }
-
     # Run the assistant and get the new message
     categoria = check_string_for_specific_words(message_body, wa_id)
-    new_message = actions.get(categoria, lambda: print("Categoría no reconocida"))
+    new_message = run_assistant(thread.id, name, categoria)
 
     return new_message
+
+def get_assistant_id_from_category(assistant_category):
+    if assistant_category == "Registrar":
+        return OPENAI_ASSISTANT_ID_REGISTRAR
+    elif assistant_category == "Facturar":
+        return OPENAI_ASSISTANT_ID_FACTURAS
+    elif assistant_category == "General":
+        return OPENAI_ASSISTANT_ID_GENERAL
+    else:
+        return OPENAI_ASSISTANT_ID_ORIGINAL

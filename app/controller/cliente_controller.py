@@ -15,3 +15,6 @@ class ClienteController:
 
     def obtener_por_telefono(self, telefono):
         return self.service.buscar_por_telefono(telefono)
+
+    def obtener_por_cuit(self,cuit):
+        return self.service.buscar_por_cuit(cuit)

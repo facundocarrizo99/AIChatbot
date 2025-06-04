@@ -1,5 +1,6 @@
 from app.config.database import db, db_test
 from app.models.factura import Factura
+from typing import Optional
 
 class FacturaService:
     def __init__(self, is_test=False):
@@ -8,21 +9,24 @@ class FacturaService:
         else:
             self.facturas_collection = db["Factura"]
 
-    def crear_factura(self, datos_factura):
-        # TODO: Estamos recibiendo un json, para convertirlo en objceto (L20), para convertiro en diccionario (L21) ESTA MALLL
-        factura_existente = self.facturas_collection.find_one({"numero": datos_factura["numero"]})
+    def crear_factura(self, factura):
+        # TODO: ROMPE el TEST
+        factura_existente = self.facturas_collection.find_one({"numero": factura.numero})
 
         if factura_existente:
             ultima_factura = self.facturas_collection.find().sort("numero", -1).limit(1)
             ultimo_numero = int(ultima_factura[0]["numero"]) if ultima_factura else 0
-            datos_factura["numero"] = str(ultimo_numero + 1)
+            factura.numero = str(ultimo_numero + 1)
 
-        factura = Factura(**datos_factura)
         result = self.facturas_collection.insert_one(factura.to_dict())
         return str(result.inserted_id)
 
-    def obtener_factura_por_numero(self, numero):
-        return self.facturas_collection.find_one({"numero": numero})
+    def obtener_factura_por_numero(self, numero) -> Optional[Factura]:
+        data = self.facturas_collection.find_one({"numero": numero})
+        if data:
+            data.pop("_id", None)  # Opcional: elimina el _id si no lo vas a usar
+            return Factura.from_dict(data)
+        return None
 
     def eliminar_factura(self, numero):
         result = self.facturas_collection.delete_one({"numero": numero})

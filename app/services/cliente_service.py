@@ -26,3 +26,10 @@ class ClienteService:
 
     def buscar_por_telefono(self, telefono):
         return self.collection.find_one({"telefono": telefono, "categoria_monotributo": {"$exists": False}})
+
+    def buscar_por_cuit(self,cuit):
+        return self.collection.find_one({
+            "clientes": {
+                "$elemMatch": {"cuit":cuit}
+            }
+        })

@@ -2,7 +2,7 @@ from app.services.monotributista_service import MonotributistaService
 
 class MonotributistaController:
     def __init__(self):
-        self.service = MonotributistaService()
+        self.service = MonotributistaService(False)
 
     def crear_monotributista(self, datos):
         return self.service.agregar_monotributista(datos)
@@ -21,3 +21,6 @@ class MonotributistaController:
 
     def modificar_cliente(self, telefono, cliente_identificador, nuevos_datos):
         return self.service.modificar_cliente_de_monotributista(telefono, cliente_identificador, nuevos_datos)
+
+    def obtener_por_cuit(self,cuit):
+        return self.service.buscar_por_cuit(cuit)

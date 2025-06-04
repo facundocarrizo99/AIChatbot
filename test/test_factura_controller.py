@@ -10,15 +10,18 @@ class MyTestCase(unittest.TestCase):
         self.arca_service = ARCAService()
         # Datos de prueba
         self.factura_test = {
-            "numero": "0",
-            "fecha": "2025-05-18T14:00:00Z",
-            "cuit_emisor": "20304050607",
-            "cuit_cliente": "27112233445",
-            "productos": [
+            "actionToBeDone": "invoice.add",
+            "client": "Macarena Algo",
+            "items": [
                 {"nombre": "Producto A", "precio_unitario": 100.0, "cantidad": 2,"total":23},
                 {"nombre": "Producto B", "precio_unitario": 50.0, "cantidad": 3,"total":40}
             ]
         }
+
+    def test_generar_factura(self):
+        factura = self.factura_controller.crear_factura(self.factura_test, "5491134031128")
+        print(factura)
+        assert isinstance(factura, Factura)
 
     def test_agregar_cae(self):
         factura = Factura(**self.factura_test)
