@@ -96,12 +96,9 @@ def run_assistant(thread_id, name, assistant_category, telefono):
 
     # Obtener el último mensaje del assistant
     messages = client.beta.threads.messages.list(thread_id=thread.id)
-
-    for message in messages.data:
-        if message.role == "assistant":
-            return message.content[0].text.value
-
-    return "No assistant response found."
+    new_message = messages.data[0].content[0].text.value
+    logging.info(f"Generated message: {new_message}")
+    return new_message
 
 def generate_ai_response(message_body, wa_id, name):
     # Check if there is already a thread_id for the wa_id
@@ -131,6 +128,8 @@ def generate_ai_response(message_body, wa_id, name):
     # Run the assistant and get the new message
     #categoria = check_string_for_specific_words(message_body, wa_id)
     new_message = run_assistant(thread.id, name, "Facturar", wa_id)
+    categoria = check_string_for_specific_words(message_body, wa_id)
+    new_message = run_assistant(thread.id, name, categoria)
 
     return new_message
 
@@ -172,3 +171,13 @@ def ejecutar_funcion_por_nombre(nombre_funcion, args, telefono):
         }
 
     return str(response) if isinstance(response, dict) else response
+
+def get_assistant_id_from_category(assistant_category):
+    if assistant_category == "Registrar":
+        return OPENAI_ASSISTANT_ID_REGISTRAR
+    elif assistant_category == "Facturar":
+        return OPENAI_ASSISTANT_ID_FACTURAS
+    elif assistant_category == "General":
+        return OPENAI_ASSISTANT_ID_GENERAL
+    else:
+        return OPENAI_ASSISTANT_ID_ORIGINAL
