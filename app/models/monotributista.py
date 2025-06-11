@@ -14,11 +14,17 @@ class Monotributista(Usuario):
         self.clientes = [] if clientes is None else clientes  # Lista de clientes
 
     def buscar_clientes_por_valor(self, valor_buscado):
-        encontrados = []
+        valor_buscado = str(valor_buscado).lower()
+        resultados = []
+
         for cliente in self.clientes:
-            if any(str(valor).lower() == str(valor_buscado).lower() for valor in cliente.values()):
-                encontrados.append(cliente)
-        return encontrados[0]
+            for campo in ['nombreCompleto', 'telefono', 'email', 'condicionIva', 'cuit', 'domicilio']:
+                valor = str(getattr(cliente, campo, '')).lower()
+                if valor_buscado in valor:
+                    resultados.append(cliente)
+                    break  # Ya encontró coincidencia en un campo, pasa al siguiente cliente
+
+        return resultados
 
     def to_dict(self):
         return {
@@ -56,10 +62,8 @@ class Monotributista(Usuario):
     @staticmethod
     def from_dict(data):
         clientes_data = data.get("clientes", [])
-
         # Si querés convertir cada cliente a objeto Cliente:
         clientes = [Cliente.from_dict(c) if isinstance(c, dict) else c for c in clientes_data]
-
         return Monotributista(
             nombreCompleto=data.get("nombreCompleto"),
             telefono=data.get("telefono"),
@@ -75,3 +79,4 @@ class Monotributista(Usuario):
             fecha_inicio_actividad=data.get("fecha_inicio_actividad"),
             clientes=clientes
         )
+

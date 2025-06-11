@@ -16,7 +16,7 @@ class FacturaService:
         if factura_existente:
             ultima_factura = self.facturas_collection.find().sort("numero", -1).limit(1)
             ultimo_numero = int(ultima_factura[0]["numero"]) if ultima_factura else 0
-            factura.numero = str(ultimo_numero + 1)
+            factura.numero = (ultimo_numero + 1)
 
         result = self.facturas_collection.insert_one(factura.to_dict())
         return str(result.inserted_id)

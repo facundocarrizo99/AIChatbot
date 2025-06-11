@@ -21,10 +21,10 @@ class Producto:
         }
 
 class Factura:
-    def __init__(self, items, actionToBeDone=None, issue_date=None, billed_period_from=None, billed_period_to=None, until=None, expiration_date=None, client=None):
+    def __init__(self, items=None, actionToBeDone=None, issue_date=None, billed_period_from=None, billed_period_to=None, until=None, expiration_date=None, client=None):
         self.numero = None
-        self.productos = [p.to_dict() if isinstance(p, Producto) else p for p in items]
-        self.total = sum([p["total"] for p in self.productos])
+        self.productos = []
+        self.total = 0
         self.fecha = datetime.utcnow().isoformat()
         self.tipo_factura = None
         self.emisor = None
@@ -48,7 +48,7 @@ class Factura:
             "periodo_facturado_hasta": self.periodo_facturado_hasta,
             "fecha_vencimiento_pago": self.fecha_vencimiento_pago,
             "condicion_venta": self.condicion_venta,
-            "productos": self.productos,
+            "productos": [p.to_dict() for p in self.productos],
             "total": self.total,
             "cae": self.cae,
             "fecha_vencimiento_cae": self.fecha_vencimiento_cae
@@ -69,11 +69,14 @@ class Factura:
         factura.fecha_vencimiento_cae = data.get("fecha_vencimiento_cae")
         return factura
 
-    def completar_factura(self, monotributista, cliente):
+    def completar_factura(self, monotributista, cliente, productos):
         self.emisor = monotributista
         self.cliente = cliente
         self.condicion_venta = 'Contado'
         self.tipo_factura = 'C'
+        for producto in productos:
+            self.productos.append(Producto(**producto))
+        self.total = sum([p.precio_unitario for p in self.productos])
         if self.fecha_vencimiento_pago is None:
             self.fecha_vencimiento_pago = self.fecha
             self.periodo_facturado_desde = self.fecha

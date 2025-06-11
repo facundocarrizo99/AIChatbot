@@ -53,37 +53,6 @@ def hasJsonInside(text):
     return False
 
 
-def string_to_action(string_json, owner_phone):
-    # find on json attribute type the object to be processed
-    actions = {
-        "client.add": MonotributistaController.agregar_cliente(monotributistaController, owner_phone,
-                                                               convertJSONToCliente(string_json)),
-        #"client.modify": MonotributistaController.modificar_cliente(monotributistaController, ownerPhone, convertJSONToCliente(json)),
-        #"client.delete": MonotributistaController.eliminar_monotributista(monotributistaController, ownerPhone),
-        #"client.search": MonotributistaController.obtener_por_telefono(monotributistaController, ownerPhone, convertJSONToCliente(json)),
-        "monotributista.add": MonotributistaController.crear_monotributista(monotributistaController,
-                                                                            convertJSONToCliente(string_json)),
-        "monotributista.modify": MonotributistaController.modificar_monotributista(monotributistaController,
-                                                                                   owner_phone,
-                                                                                   convertJSONToCliente(string_json)),
-        "monotributista.delete": MonotributistaController.eliminar_monotributista(monotributistaController,
-                                                                                  owner_phone),
-        "monotributista.searchByPhone": MonotributistaController.obtener_por_telefono(monotributistaController,
-                                                                                      owner_phone),
-        "invoice.add": FacturaController.crear_factura(facturaController, convertJSONToCliente(string_json), owner_phone),
-        #"invoice.modify": FacturaController.modificar_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
-        #"invoice.delete": FacturaController.eliminar_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
-        #"invoice.searchBy": FacturaController.obtener_factura(facturaController, ownerPhone, convertJSONToCliente(json)),
-    }
-
-    action = string_json.get("actionToBeDone")
-    print('El tipo de objeto recibido es: ', type)
-    print('El owner phone es: ', owner_phone)
-    new_response = actions.get(action, lambda: print("no mapped action"))
-
-    return new_response
-
-
 def convertJSONToCliente(json):
     # Convertir el JSON a un objeto Cliente
     cliente = Cliente(

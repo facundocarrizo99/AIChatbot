@@ -14,29 +14,27 @@ class FacturaController:
         self.monotributista_controler = MonotributistaController()
         self.arca_service = ARCAService()
 
-    def crear_factura(self, datos_factura, tele_monotributista):
-        monotributista = Monotributista(**self.monotributista_controler.obtener_por_telefono(tele_monotributista))
-        clientes = Cliente(**monotributista.buscar_clientes_por_valor(datos_factura["client"]))
+    def crear_factura(self, tele_monotributista, cliente, productos):
+        monotributista = Monotributista.from_dict(self.monotributista_controler.obtener_por_telefono(tele_monotributista))
+        cliente = monotributista.buscar_clientes_por_valor(cliente)[0]
 
-        factura = Factura(**datos_factura)
-        factura = factura.completar_factura(monotributista, clientes)
+        factura = Factura()
+        factura = factura.completar_factura(monotributista, cliente, productos)
         factura = self.arca_service.get_cae(factura)
-        #TODO: no va aca pero bueno
-        #pdf = factura.factura_to_pdf()
-        print(factura.to_dict())
+
         try:
             self.service.crear_factura(factura)
             return factura
         except Exception as e:
             logging.error(f"Error al crear factura: {e}")
-            return None
+            return e
 
     def obtener_factura(self, numero):
         try:
             return self.service.obtener_factura_por_numero(numero)
         except Exception as e:
             logging.error(f"Error al obtener factura: {e}")
-            return None
+            return e
 
     def eliminar_factura(self, numero):
         try:
