@@ -117,6 +117,8 @@ def send_document_message(recipient_number, file_path, filename_to_display="docu
         upload_response = requests.post(media_upload_url, headers=headers_auth, files=files, data=data)
         upload_response.raise_for_status()
         media_id = upload_response.json().get("id")
+        print(media_id)
+        print(filename_to_display)
         if not media_id:
             raise Exception("No se recibió media_id del servidor.")
     except Exception as e:
@@ -124,11 +126,12 @@ def send_document_message(recipient_number, file_path, filename_to_display="docu
         return jsonify({"status": "error", "message": f"Error al subir el archivo: {str(e)}"}), 500
 
     # Paso 2: Enviar el mensaje con el media_id
-    message_url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
-    headers_message = {
-        "Content-type": "application/json",
-        "Authorization": f"Bearer {current_app.config['ACCESS_TOKEN']}",
-    }
+
+    #message_url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
+    #headers_message = {
+    #    "Content-type": "application/json",
+    #    "Authorization": f"Bearer {current_app.config['ACCESS_TOKEN']}"
+    #}
 
     payload = {
         "messaging_product": "whatsapp",
@@ -137,12 +140,14 @@ def send_document_message(recipient_number, file_path, filename_to_display="docu
         "document": {
             "id": media_id,
             "filename": filename_to_display
-        }
+        },
+        "recipient_type": "individual"
     }
 
     try:
-        response = requests.post(message_url, json=payload, headers=headers_message, timeout=10)
-        response.raise_for_status()
+        #response = requests.post(message_url, json=payload, headers=headers_message, timeout=10)
+        response = send_message(payload)
+        #response.raise_for_status()
     except requests.Timeout:
         logging.error("Timeout al enviar PDF")
         return jsonify({"status": "error", "message": "Time out al enviar PDF"}), 408

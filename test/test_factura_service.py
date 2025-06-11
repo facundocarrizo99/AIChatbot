@@ -4,6 +4,8 @@ import unittest
 from app.models.factura import Factura
 from app.services.factura_service import FacturaService
 from app.controller.factura_controller import FacturaController
+from app.utils.whatsapp_utils import send_document_message
+from app import create_app
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
@@ -62,6 +64,17 @@ class MyTestCase(unittest.TestCase):
         factura = self.factura_service.obtener_factura_por_numero("0")
         factura.factura_to_pdf()
         assert (os.path.exists("factura_generada"), "El archivo PDF no fue creado")
+
+    def test_send_document(self):
+        current_dir = os.path.dirname(__file__)
+        pdf_path = os.path.join(current_dir, "factura_generada.pdf")
+        recipient_number = "541128234936"
+        app = create_app()
+        with app.app_context():
+            response, status_code = send_document_message(recipient_number, pdf_path, "factura_generada.pdf")
+            print(response.get_json())
+            self.assertEqual(status_code, 200)
+            self.assertEqual(response.get_json()["status"], "success")
 
 if __name__ == '__main__':
     unittest.main()
