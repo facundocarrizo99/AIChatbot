@@ -126,11 +126,11 @@ def send_document_message(recipient_number, file_path, filename_to_display="docu
 
     # Paso 2: Enviar el mensaje con el media_id
 
-    #message_url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
-    #headers_message = {
-    #    "Content-type": "application/json",
-    #    "Authorization": f"Bearer {current_app.config['ACCESS_TOKEN']}"
-    #}
+    message_url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
+    headers_message = {
+        "Content-type": "application/json",
+        "Authorization": f"Bearer {current_app.config['ACCESS_TOKEN']}"
+    }
 
     payload = {
         "messaging_product": "whatsapp",
@@ -144,9 +144,9 @@ def send_document_message(recipient_number, file_path, filename_to_display="docu
     }
 
     try:
-        #response = requests.post(message_url, json=payload, headers=headers_message, timeout=10)
-        response = send_message(payload)
-        #response.raise_for_status()
+        response = requests.post(message_url, json=payload, headers=headers_message, timeout=10)
+        #response = send_message(payload)
+        response.raise_for_status()
     except requests.Timeout:
         logging.error("Timeout al enviar PDF")
         return jsonify({"status": "error", "message": "Time out al enviar PDF"}), 408

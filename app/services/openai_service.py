@@ -45,7 +45,7 @@ def store_thread(wa_id, thread_id):
         threads_shelf[wa_id] = thread_id
 
 def run_assistant(thread_id, name, assistant_category, telefono):
-    assistant_id = get_assistant_id_from_category(assistant_category)
+    #assistant_id = get_assistant_id_from_category(assistant_category)
     assistant = client.beta.assistants.retrieve(OPENAI_ASSISTANT_ID_FACTURAS)
 
     # Recuperar el thread actualizado
@@ -128,8 +128,6 @@ def generate_ai_response(message_body, wa_id, name):
     # Run the assistant and get the new message
     #categoria = check_string_for_specific_words(message_body, wa_id)
     new_message = run_assistant(thread.id, name, "Facturar", wa_id)
-    categoria = check_string_for_specific_words(message_body, wa_id)
-    new_message = run_assistant(thread.id, name, categoria)
 
     return new_message
 

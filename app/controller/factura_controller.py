@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from app.controller.monotributista_controller import MonotributistaController
@@ -6,6 +7,7 @@ from app.models.factura import Factura
 from app.models.monotributista import Monotributista
 from app.services.arca_service import ARCAService
 from app.services.factura_service import FacturaService
+from app.utils import whatsapp_utils
 
 
 class FacturaController:
@@ -24,6 +26,7 @@ class FacturaController:
 
         try:
             self.service.crear_factura(factura)
+            asyncio.create_task(self.crear_pdf_y_enviar(factura))
             return factura
         except Exception as e:
             logging.error(f"Error al crear factura: {e}")
@@ -56,3 +59,7 @@ class FacturaController:
         except Exception as e:
             logging.error(f"Error al obtener todas las facturas: {e}")
             return []
+
+    def crear_pdf_y_enviar(self, factura):
+        pdf = '/Users/facundocarrizo/Downloads/factura_generada.pdf'
+        whatsapp_utils.send_document_message(factura.emisor.telefono, pdf, "factura-20250611-0001.pdf")

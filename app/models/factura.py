@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 from app.models.cliente import Cliente
 from app.models.monotributista import Monotributista
 from jinja2 import Environment, FileSystemLoader
-import pdfkit
+#import pdfkit
 import os
 
 class Producto:
@@ -111,9 +111,9 @@ class Factura:
         )
 
         # Ruta a wkhtmltopdf (ajustar si es necesario)
-        config = pdfkit.configuration(
-            wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
-        )
-
-        # Generar el PDF
-        pdfkit.from_string(html, "factura_generada.pdf", configuration=config)
+        # config = pdfkit.configuration(
+        #     wkhtmltopdf="C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+        # )
+        #
+        # # Generar el PDF
+        # return pdfkit.from_string(html, "factura_generada.pdf", configuration=config)
