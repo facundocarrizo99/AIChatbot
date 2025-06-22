@@ -18,4 +18,7 @@ class MyTestCase(unittest.TestCase):
         thread_id = check_if_thread_exists(wa_id)
         print(thread_id)
         response = client.beta.threads.delete(thread_id)
-        self.assertEqual(True, response.get("deleted"))  # add assertion here
+        self.assertEqual(True, response.get("deleted")) 
+    
+    def test_generate_message(self):  # add assertion here
+        message = generate_ai_response("hola", "5491123456789", "Macarena Algo") # add assertion here
