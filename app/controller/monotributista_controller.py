@@ -8,8 +8,11 @@ class MonotributistaController:
     def __init__(self):
         self.service = MonotributistaService(False)
 
-    def crear_monotributista(self, datos):
-        return self.service.agregar_monotributista(datos)
+    def crear_monotributista(self, nombreCompleto, telefono, email, condicionIva, cuit, domicilio,
+                 razonSocial, categoria_monotributo, actividad, punto_venta, ingresos_brutos, fecha_inicio_actividad):
+        monotributista = Monotributista(nombreCompleto, telefono, email, condicionIva, cuit, domicilio,
+                 razonSocial, categoria_monotributo, actividad, punto_venta, ingresos_brutos, fecha_inicio_actividad)
+        return self.service.agregar_monotributista(monotributista)
 
     def eliminar_monotributista(self, telefono):
         return self.service.eliminar_monotributista(telefono)
@@ -20,8 +23,9 @@ class MonotributistaController:
     def obtener_por_telefono(self, telefono):
         return self.service.buscar_por_telefono(telefono)
 
-    def agregar_cliente(self, telefono_monotributista, cliente_data):
-        return self.service.agregar_cliente_a_monotributista(telefono_monotributista, cliente_data)
+    def agregar_cliente(self, telefono_monotributista, nombre_completo, telefono, email, condicion_iva, cuit, domicilio):
+        cliente = Cliente(nombre_completo, telefono, email, condicion_iva, cuit, domicilio)
+        return self.service.agregar_cliente_a_monotributista(telefono_monotributista, cliente)
 
     def modificar_cliente(self, telefono, cliente_identificador, nuevos_datos):
         return self.service.modificar_cliente_de_monotributista(telefono, cliente_identificador, nuevos_datos)

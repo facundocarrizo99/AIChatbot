@@ -52,11 +52,11 @@ class FacturaController:
 
         factura = Factura()
         factura = factura.completar_factura(monotributista, cliente, productos)
-        factura = self.arca_service.get_cae(factura)
+        #factura = self.arca_service.agregar_cae(factura)
 
         try:
             self.service.crear_factura(factura)
-            asyncio.create_task(self.crear_pdf_y_enviar(factura))
+            # asyncio.create_task(self.crear_pdf_y_enviar(factura))
             return factura
         except Exception as e:
             logging.error(f"Error al crear factura: {e}")

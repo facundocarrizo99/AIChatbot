@@ -12,8 +12,10 @@ class MonotributistaService:
             self.collection = db["Usuario"]
 
 
-    def agregar_monotributista(self, datos):
-        monotributista = Monotributista(**datos)
+    def agregar_monotributista(self, monotributista):
+        existente = self.buscar_por_telefono(monotributista.telefono)
+        if not existente:
+            return False
         return str(self.collection.insert_one(monotributista.__dict__).inserted_id)
 
     def eliminar_monotributista(self, telefono):
@@ -29,12 +31,12 @@ class MonotributistaService:
     def buscar_por_cuit(self,cuit):
         return self.collection.find_one({"cuit":cuit,"categoria_monotributo": {"$exists": True}})
 
-    def agregar_cliente_a_monotributista(self, telefono, cliente_data):
+    def agregar_cliente_a_monotributista(self, telefono, cliente):
         monotributista = self.buscar_por_telefono(telefono)
         if not monotributista:
             return False
 
-        cliente = Cliente(**cliente_data)
+        #cliente = Cliente(**cliente_data)
         self.collection.update_one(
             {"telefono": telefono},
             {"$addToSet": {"clientes": cliente.__dict__}}
