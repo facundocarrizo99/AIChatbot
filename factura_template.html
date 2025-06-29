@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            margin: 15mm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            margin: 0;
+        }
+
+        .border-box {
+            border: 1px solid #000;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #000;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .header .titulo {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            flex: 2;
+        }
+
+        .header .tipo {
+            font-size: 20px;
+            font-weight: bold;
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+            width: 80px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: left;
+        }
+
+        .totales {
+            text-align: right;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 10px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+<body>
+
+{% for tipo in ["ORIGINAL", "DUPLICADO", "TRIPLICADO"] %}
+    <div class="header">
+        <div class="tipo">
+            C<br>
+            <span style="font-size: 10px;">COD. 011</span>
+        </div>
+        <div class="titulo">FACTURA - {{ tipo }}</div>
+    </div>
+
+    <div class="border-box">
+        <strong>Razón Social:</strong> {{ emisor.nombreCompleto }}<br>
+        <strong>Domicilio Comercial:</strong> {{ emisor.domicilio }}<br>
+        <strong>CUIT:</strong> {{ emisor.cuit }}<br>
+        <strong>Ingresos Brutos:</strong> {{ emisor.cuit }}<br>
+        <strong>Condición frente al IVA:</strong> {{ emisor.condicionIva }}<br>
+        <strong>Fecha de Inicio de Actividades:</strong> {{ emisor.inicio_actividad }}
+    </div>
+
+    <div class="border-box">
+        <strong>Punto de Venta:</strong> {{ "%04d"|format(punto_venta) }} -
+        <strong>Comprobante N°:</strong> {{ "%08d"|format(numero) }}<br>
+        <strong>Fecha de Emisión:</strong> {{ fecha[:10] }}<br>
+        <strong>Condición de Venta:</strong> {{ condicion_venta }}<br>
+        <strong>Período Facturado:</strong> {{ periodo_facturado_desde[:10] }} al {{ periodo_facturado_hasta[:10] }}<br>
+        <strong>Fecha de Vto. para el pago:</strong> {{ fecha_vencimiento_pago[:10] }}
+    </div>
+
+    <div class="border-box">
+        <strong>DNI / CUIT:</strong> {{ cliente.cuit }}<br>
+        <strong>Apellido y Nombre / Razón Social:</strong> {{ cliente.nombreCompleto }}<br>
+        <strong>Condición frente al IVA:</strong> {{ cliente.condicionIva }}<br>
+        <strong>Domicilio:</strong> {{ cliente.domicilio or "-" }}
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Producto / Servicio</th>
+                <th>Cantidad</th>
+                <th>U. Medida</th>
+                <th>Precio Unit.</th>
+                <th>% Bonif</th>
+                <th>Imp. Bonif.</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prod in productos %}
+            <tr>
+                <td>{{ prod.nombre }}</td>
+                <td>{{ prod.cantidad }}</td>
+                <td>{{ prod.unidad or 'unidades' }}</td>
+                <td>${{ "%.2f"|format(prod.precio_unitario) }}</td>
+                <td>0,00</td>
+                <td>0,00</td>
+                <td>${{ "%.2f"|format(prod.total) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totales">
+        Subtotal: ${{ "%.2f"|format(total) }}<br>
+        Importe Otros Tributos: $0,00<br>
+        Importe Total: ${{ "%.2f"|format(total) }}
+    </div>
+
+    <div class="footer">
+        <strong>CAE N°:</strong> {{ cae or 'XXXXXXXXXXXXXXX' }}<br>
+        <strong>Fecha de Vto. de CAE:</strong> {{ fecha_vencimiento_cae or 'DD/MM/AAAA' }}<br>
+        <em>Comprobante Autorizado</em>
+    </div>
+
+    {% if not loop.last %}
+    <div class="page-break"></div>
+    {% endif %}
+{% endfor %}
+
+</body>
+</html>

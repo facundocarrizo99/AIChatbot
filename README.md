@@ -31,10 +31,10 @@ Antes de realizar pruebas, es necesario clonar el repositorio del proyecto y eje
 
 ```
 git clone https://github.com/facundocarrizo99/AIChatbot
+
 cd python-whatsapp-bot
 ```
 
-1. 
 2. Instalar las dependencias:
 
 ```
