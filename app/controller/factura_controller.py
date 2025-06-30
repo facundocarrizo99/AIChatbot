@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from multiprocessing import Process
 
 from app.controller.monotributista_controller import MonotributistaController
@@ -59,9 +60,10 @@ class FacturaController:
             return []
 
     def issue_invoice(self, factura):
-        asyncio.sleep(20)
+        #time.sleep(20)
         factura = self.arca_service.agregar_cae(factura)
         self.service.modificar_factura(factura.numero, factura.to_dict())
         pdf = factura.factura_to_pdf()
         whatsapp_utils.send_document_message(factura.emisor.telefono, pdf[0], pdf[-1])
+        whatsapp_utils.send_document_message(factura.cliente.telefono, pdf[0], pdf[-1])
 
