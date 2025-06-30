@@ -164,7 +164,8 @@ class OpenAIService:
             'verificar_cliente': self.controllers['monotributista'].verificar_cliente,
             'crear_cliente': self.controllers['monotributista'].agregar_cliente,
             'modificar_cliente': self.controllers['monotributista'].modificar_cliente,
-            'obtener_por_cuit': self.controllers['monotributista'].obtener_por_cuit
+            'obtener_por_cuit': self.controllers['monotributista'].obtener_por_cuit,
+            'crear_monotributista': self.controllers['monotributista'].crear_monotributista
         }
 
         func = controller_functions.get(function_name)

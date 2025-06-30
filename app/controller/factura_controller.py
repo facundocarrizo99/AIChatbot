@@ -1,44 +1,13 @@
 import asyncio
 import logging
+from multiprocessing import Process
 
 from app.controller.monotributista_controller import MonotributistaController
-from app.models.cliente import Cliente
 from app.models.factura import Factura
 from app.models.monotributista import Monotributista
 from app.services.arca_service import ARCAService
 from app.services.factura_service import FacturaService
 from app.utils import whatsapp_utils
-
-# app/controller/factura_controller.py
-from fastapi import APIRouter, HTTPException
-from typing import Dict
-from app.services.arca_service import InvoiceService
-
-router = APIRouter()
-invoice_service = InvoiceService()
-
-
-@router.post("/api/invoices/request-cae")
-async def request_cae(invoice_data: Dict):
-    """
-    Request CAE for an invoice
-
-    Expected invoice_data format:
-    {
-        "tipo_cbte": int,  # 1: Factura A, 6: Factura B
-        "punto_vta": int,  # Punto de venta
-        "cbte_nro": int,   # Número de comprobante
-        "importe_total": float  # Total amount
-        # ... other invoice details
-    }
-    """
-    try:
-        result = invoice_service.request_cae(invoice_data)
-        if not result.get('success'):
-            raise HTTPException(status_code=400, detail=result.get('error', 'Unknown error'))
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 class FacturaController:
     def __init__(self):
@@ -52,12 +21,11 @@ class FacturaController:
 
         factura = Factura()
         factura = factura.completar_factura(monotributista, cliente, productos)
-        #factura = self.arca_service.agregar_cae(factura)
 
         try:
-            self.service.crear_factura(factura)
-            # asyncio.create_task(self.crear_pdf_y_enviar(factura))
-            return factura
+            res = self.service.crear_factura(factura)
+            Process(target=self.issue_invoice(factura)).start()
+            return res
         except Exception as e:
             logging.error(f"Error al crear factura: {e}")
             return e
@@ -90,7 +58,10 @@ class FacturaController:
             logging.error(f"Error al obtener todas las facturas: {e}")
             return []
 
-    def crear_pdf_y_enviar(self, factura):
-        pdf = '/Users/facundocarrizo/Downloads/factura_generada.pdf'
-        whatsapp_utils.send_document_message(factura.emisor.telefono, pdf, "factura-20250611-0001.pdf")
+    def issue_invoice(self, factura):
+        asyncio.sleep(20)
+        factura = self.arca_service.agregar_cae(factura)
+        self.service.modificar_factura(factura.numero, factura.to_dict())
+        pdf = factura.factura_to_pdf()
+        whatsapp_utils.send_document_message(factura.emisor.telefono, pdf[0], pdf[-1])
 

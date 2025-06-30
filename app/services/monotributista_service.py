@@ -14,7 +14,7 @@ class MonotributistaService:
 
     def agregar_monotributista(self, monotributista):
         existente = self.buscar_por_telefono(monotributista.telefono)
-        if not existente:
+        if existente:
             return False
         return str(self.collection.insert_one(monotributista.__dict__).inserted_id)
 

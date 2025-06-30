@@ -8,7 +8,7 @@ class MonotributistaController:
     def __init__(self):
         self.service = MonotributistaService(False)
 
-    def crear_monotributista(self, nombreCompleto, telefono, email, condicionIva, cuit, domicilio,
+    def crear_monotributista(self,tele_original, nombreCompleto, telefono, email, condicionIva, cuit, domicilio,
                  razonSocial, categoria_monotributo, actividad, punto_venta, ingresos_brutos, fecha_inicio_actividad):
         monotributista = Monotributista(nombreCompleto, telefono, email, condicionIva, cuit, domicilio,
                  razonSocial, categoria_monotributo, actividad, punto_venta, ingresos_brutos, fecha_inicio_actividad)
