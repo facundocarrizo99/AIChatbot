@@ -1,5 +1,4 @@
 import logging
-from pymongo import MongoClient
 from app.models.monotributista import Monotributista
 from app.models.cliente import Cliente
 from app.config.database import db, db_test

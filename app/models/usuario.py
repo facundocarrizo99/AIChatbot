@@ -1,6 +1,6 @@
 import logging
-
 from abc import ABC, abstractmethod
+
 
 class Usuario(ABC):
     def __init__(self, nombreCompleto, telefono, email, condicionIva, cuit, domicilio, _id=None):
@@ -12,7 +12,6 @@ class Usuario(ABC):
         self.cuit = cuit
         self.domicilio = domicilio
         self.razonSocial = None
-        logging.info("Conexión a la base de datos exitosa.")
 
     @abstractmethod
     def to_dict(self):

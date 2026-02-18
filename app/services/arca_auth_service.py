@@ -3,7 +3,6 @@ import os
 import logging
 from typing import Dict, Optional
 from datetime import datetime, timedelta
-from pyafipws.wsaa import WSAA
 from app.config.arca_config import AFIPConfig
 
 logger = logging.getLogger(__name__)
@@ -11,9 +10,16 @@ logger = logging.getLogger(__name__)
 
 class AFIPAuthService:
     def __init__(self):
-        self.wsaa = WSAA()
+        self.wsaa = None
         self.config = AFIPConfig()
         self.cache = {}
+
+    def _get_wsaa(self):
+        """Lazy import of WSAA to avoid hard dependency on pyafipws at startup."""
+        if self.wsaa is None:
+            from pyafipws.wsaa import WSAA
+            self.wsaa = WSAA()
+        return self.wsaa
 
     def authenticate(self, service: str = 'wsfe') -> Optional[Dict[str, str]]:
         """
@@ -39,21 +45,22 @@ class AFIPAuthService:
             wsdl = self.config.WSAA_URL + "?wsdl"
 
             # Create ticket request
-            tra = self.wsaa.CreateTRA(service=service)
-            cms = self.wsaa.SignTRA(tra, cert, private_key)
+            wsaa = self._get_wsaa()
+            tra = wsaa.CreateTRA(service=service)
+            cms = wsaa.SignTRA(tra, cert, private_key)
 
             # Request authorization
-            response = self.wsaa.Conectar(wsdl=wsdl, cache=None, proxy=None, wrapper=None, cacert=None,
-                                          url=self.config.WSAA_URL, cache_dir=self.config.CACHE_DIR)
+            response = wsaa.Conectar(wsdl=wsdl, cache=None, proxy=None, wrapper=None, cacert=None,
+                                     url=self.config.WSAA_URL, cache_dir=self.config.CACHE_DIR)
 
             if not response:
                 logger.error("Failed to connect to WSAA")
                 return None
 
             # Get token and sign
-            token = self.wsaa.Token
-            sign = self.wsaa.Sign
-            expiration = self.wsaa.expirationTime
+            token = wsaa.Token
+            sign = wsaa.Sign
+            expiration = wsaa.expirationTime
 
             if not token or not sign:
                 logger.error("Failed to get token and sign from WSAA")
