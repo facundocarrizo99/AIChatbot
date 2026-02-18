@@ -3,7 +3,6 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from typing import Dict, Optional
-from pyafipws.wsfev1 import WSFEv1
 from app.services.arca_auth_service import AFIPAuthService
 from app.config.arca_config import AFIPConfig
 
@@ -13,7 +12,14 @@ class InvoiceService:
     def __init__(self):
         self.auth_service = AFIPAuthService()
         self.config = AFIPConfig()
-        self.wsfe = WSFEv1()
+        self.wsfe = None
+
+    def _get_wsfe(self):
+        """Lazy import of WSFEv1 to avoid hard dependency on pyafipws at startup."""
+        if self.wsfe is None:
+            from pyafipws.wsfev1 import WSFEv1
+            self.wsfe = WSFEv1()
+        return self.wsfe
 
     def request_cae(self, invoice_data: Dict) -> Dict:
         """
@@ -32,47 +38,47 @@ class InvoiceService:
                 return {'error': 'Authentication failed', 'success': False}
 
             # Initialize WSFE client
-            self.wsfe.Conectar(wsdl=self.config.WSFE_URL + "?WSDL",
+            wsfe = self._get_wsfe()
+            wsfe.Conectar(wsdl=self.config.WSFE_URL + "?WSDL",
                                cache=None,
                                wrapper="WSFEv1",
                                proxy=None,
                                cacert=None)
 
             # Set credentials
-            self.wsfe.SetTicketAcceso(auth['token'], auth['sign'])
+            wsfe.SetTicketAcceso(auth['token'], auth['sign'])
 
             # Set invoice data
-            # Note: Adapt these fields according to your invoice_data structure
             tipo_cbte = invoice_data.get('tipo_cbte', 1)  # 1: Factura A, 6: Factura B
             punto_vta = invoice_data.get('punto_vta', 1)
             cbte_nro = invoice_data.get('cbte_nro')
             imp_total = str(invoice_data.get('importe_total', 0))
 
             # Request CAE
-            cae = self.wsfe.Authorize(tipo_cbte, punto_vta, cbte_nro,
-                                      imp_total, imp_total, imp_total,
-                                      imp_total, imp_total, imp_total,
-                                      imp_total, imp_total, imp_total)
+            cae = wsfe.Authorize(tipo_cbte, punto_vta, cbte_nro,
+                                  imp_total, imp_total, imp_total,
+                                  imp_total, imp_total, imp_total,
+                                  imp_total, imp_total, imp_total)
 
-            if self.wsfe.Excepcion:
+            if wsfe.Excepcion:
                 return {
-                    'error': f"AFIP Exception: {self.wsfe.Excepcion}",
+                    'error': f"AFIP Exception: {wsfe.Excepcion}",
                     'success': False
                 }
 
             if not cae:
                 return {
-                    'error': f"Failed to get CAE: {self.wsfe.ErrMsg}",
+                    'error': f"Failed to get CAE: {wsfe.ErrMsg}",
                     'success': False
                 }
 
             return {
                 'success': True,
                 'cae': cae,
-                'cae_expiration': self.wsfe.Vencimiento,
-                'invoice_number': self.wsfe.CbteNro,
-                'result': self.wsfe.Resultado,
-                'observations': self.wsfe.Obs
+                'cae_expiration': wsfe.Vencimiento,
+                'invoice_number': wsfe.CbteNro,
+                'result': wsfe.Resultado,
+                'observations': wsfe.Obs
             }
 
         except Exception as e:

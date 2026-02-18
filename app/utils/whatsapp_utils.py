@@ -70,16 +70,13 @@ def process_whatsapp_message(body):
     message = body["entry"][0]["changes"][0]["value"]["messages"][0]
     message_body = message["text"]["body"]
 
-    # TODO: Esto esta mal pero hasta no agregar testers o cambiar a live el proyecto no se puede hacer si no es asi
+    # TODO: Replace phone number normalization with proper E.164 handling
     if wa_id.startswith("54911"):
         new_wa_id = wa_id.replace("54911", "5411")
     else:
         new_wa_id = wa_id
 
     response = generate_ai_response(message_body, new_wa_id, name)
-    # logging.info("AI generated response created raw: " + response)
-    # if hasJsonInside(response):
-    #     response = string_to_action(getOnlyJsonFrom(response), wa_id)
 
     response = process_text_for_whatsapp(response)
     data = get_text_message_input(new_wa_id, response)
@@ -99,32 +96,32 @@ def is_valid_whatsapp_message(body):
     )
 
 def send_document_message(recipient_number, file_path, filename_to_display="documento.pdf"):
-    # Paso 1: Subir el PDF a Meta
+    # Step 1: Upload the PDF to Meta
     media_upload_url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/media"
     headers_auth = {
         "Authorization": f"Bearer {current_app.config['ACCESS_TOKEN']}",
     }
 
-    files = {
-        "file": (filename_to_display, open(file_path, 'rb'), "application/pdf")
-    }
-    data = {
-        "messaging_product": "whatsapp"
-    }
-
     try:
-        upload_response = requests.post(media_upload_url, headers=headers_auth, files=files, data=data)
-        upload_response.raise_for_status()
-        media_id = upload_response.json().get("id")
-        print(media_id)
-        print(filename_to_display)
-        if not media_id:
-            raise Exception("No se recibió media_id del servidor.")
-    except Exception as e:
-        logging.error(f" Error al subir el archivo: {e}")
-        return jsonify({"status": "error", "message": f"Error al subir el archivo: {str(e)}"}), 500
+        with open(file_path, 'rb') as pdf_file:
+            files = {
+                "file": (filename_to_display, pdf_file, "application/pdf")
+            }
+            data = {
+                "messaging_product": "whatsapp"
+            }
+            upload_response = requests.post(media_upload_url, headers=headers_auth, files=files, data=data)
+            upload_response.raise_for_status()
 
-    # Paso 2: Enviar el mensaje con el media_id
+        media_id = upload_response.json().get("id")
+        logging.info(f"Media uploaded: id={media_id}, filename={filename_to_display}")
+        if not media_id:
+            raise RuntimeError("No media_id received from server.")
+    except Exception as e:
+        logging.error(f"Error uploading file: {e}")
+        return jsonify({"status": "error", "message": f"Error uploading file: {str(e)}"}), 500
+
+    # Step 2: Send message with the media_id
 
     message_url = f"https://graph.facebook.com/{current_app.config['VERSION']}/{current_app.config['PHONE_NUMBER_ID']}/messages"
     headers_message = {
@@ -145,15 +142,13 @@ def send_document_message(recipient_number, file_path, filename_to_display="docu
 
     try:
         response = requests.post(message_url, json=payload, headers=headers_message, timeout=10)
-        #response = send_message(payload)
         response.raise_for_status()
     except requests.Timeout:
-        logging.error("Timeout al enviar PDF")
-        return jsonify({"status": "error", "message": "Time out al enviar PDF"}), 408
+        logging.error("Timeout sending PDF")
+        return jsonify({"status": "error", "message": "Timeout sending PDF"}), 408
     except requests.RequestException as e:
-        logging.error(f" F Error al enviar el mensaje: {e}")
-        return jsonify({"status": "error", "message": "No se pudo enviar el PDF"}), 500
+        logging.error(f"Error sending document message: {e}")
+        return jsonify({"status": "error", "message": "Failed to send PDF"}), 500
     else:
-        # Podés registrar o devolver la respuesta completa si querés
-        logging.info("PDF enviado correctamente.")
+        logging.info("PDF sent successfully.")
         return jsonify({"status": "success", "response": response.json()}), 200

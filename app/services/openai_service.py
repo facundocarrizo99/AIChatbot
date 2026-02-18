@@ -15,32 +15,16 @@ from app.controller.monotributista_controller import MonotributistaController
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_ASSISTANT_ID_ORIGINAL = os.getenv("OPENAI_ASSISTANT_ID_ORIGINAL")
-OPENAI_ASSISTANT_ID_FACTURAS = os.getenv("OPENAI_ASSISTANT_ID_FACTURAS")
-OPENAI_ASSISTANT_ID_REGISTRAR = os.getenv("OPENAI_ASSISTANT_ID_REGISTRAR")
-OPENAI_ASSISTANT_ID_GENERAL = os.getenv("OPENAI_ASSISTANT_ID_GENERAL")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Commenting out BotType since we're using a single assistant
-# class BotType(Enum):
-#     GENERAL = "General"
-#     FACTURAR = "Facturar"
-#     REGISTRAR = "Registrar"
 
 class OpenAIService:
     def __init__(self):
-        # self.assistant_ids = {
-        #     BotType.GENERAL: OPENAI_ASSISTANT_ID_GENERAL,
-        #     BotType.FACTURAR: OPENAI_ASSISTANT_ID_FACTURAS,
-        #     BotType.REGISTRAR: OPENAI_ASSISTANT_ID_REGISTRAR,
-        # }
         self.assistant_id = OPENAI_ASSISTANT_ID_ORIGINAL
-
-        # Keeping controllers in case they're needed for other functionality
         self.controllers = {
             'factura': FacturaController(),
             'monotributista': MonotributistaController()
         }
-        # Clean up old threads on startup
         thread_manager.cleanup_old_threads()
 
     def create_thread(self, name: str, wa_id: str) -> str:
@@ -128,9 +112,9 @@ class OpenAIService:
         for tool_call in tool_calls:
             function_name = tool_call.function.name
             arguments = json.loads(tool_call.function.arguments)
-            
+
             result = self._execute_function(function_name, arguments, wa_id)
-            
+
             tool_outputs.append({
                 "tool_call_id": tool_call.id,
                 "output": result
@@ -144,19 +128,8 @@ class OpenAIService:
 
     def _execute_function(self, function_name: str, arguments: Dict, wa_id: str) -> str:
         """Execute a function based on its name and return the result"""
-        # Special handling for bot calls
-        print(f"Executing {function_name}")
-        #TODO: no se mapea bien el bot con su type correspondiente
-        if function_name.startswith("call_") and function_name.endswith("_bot"):
-            bot_type = self._get_bot_type_from_function(function_name)
-            if bot_type is not None and isinstance(bot_type, BotType):
-                print("BOT TYPE MATCHED:", bot_type.value)
-                return self.handle_specific_bot(arguments.get("message", ""), wa_id, arguments.get("name", ""), bot_type)
-            # else:
-            #     print("BOT TYPE NOT MATCHED - Debug info:")
-            #     print("Function name:", function_name)
-            #     print("Available mappings:", self._get_bot_type_from_function.__defaults__)
-        
+        logging.info(f"Executing function: {function_name}")
+
         # Handle controller functions
         controller_functions = {
             'crear_factura': self.controllers['factura'].crear_factura,
@@ -169,8 +142,7 @@ class OpenAIService:
         }
 
         func = controller_functions.get(function_name)
-        print("SE INTENTA EJECUTAR LA FUNCION: ", func)
-        print("Argunmentos: ", arguments)
+        logging.info(f"Resolved function: {func}, arguments: {arguments}")
         if not func:
             return f"Function {function_name} not found"
 

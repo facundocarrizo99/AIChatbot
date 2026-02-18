@@ -1,3 +1,4 @@
+import logging
 import shelve
 import time
 from datetime import datetime, timedelta
@@ -17,7 +18,7 @@ THREAD_DB_PATH = "threads_db"  # Will be created in the current directory
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
-class Thread_controller:
+class ThreadController:
     def __init__(self):
         self.threads_db = {}
         self._load_threads()
@@ -38,7 +39,7 @@ class Thread_controller:
         thread_count = len(self.threads_db)
         self.threads_db = {}
         self._save_threads()
-        print(f"[Thread Controller] Cleared {thread_count} thread(s) on startup")
+        logging.info(f"Cleared {thread_count} thread(s) on startup")
 
     def _save_threads(self):
         """Save threads to the shelf file"""
@@ -98,7 +99,7 @@ class Thread_controller:
 
 
 # Initialize thread manager
-thread_manager = Thread_controller()
+thread_manager = ThreadController()
 
 
 def cleanup_old_threads_periodically(interval_minutes=5):

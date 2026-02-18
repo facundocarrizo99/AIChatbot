@@ -1,7 +1,6 @@
 import logging
-from pymongo import MongoClient
 from app.models.cliente import Cliente
-from app.config.database import db,db_test
+from app.config.database import db, db_test
 
 class ClienteService:
     def __init__(self, is_test=False):
