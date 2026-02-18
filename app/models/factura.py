@@ -103,6 +103,7 @@ class Factura:
 
         return self
 
+    @staticmethod
     def razon_smart_cut(text, max_length):
         """Smartly cut text to max_length, adding ellipsis if needed."""
         if not text:

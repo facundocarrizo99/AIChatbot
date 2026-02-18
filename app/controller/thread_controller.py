@@ -15,7 +15,15 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 MAX_MESSAGES_PER_THREAD = 30
 THREAD_TIMEOUT_MINUTES = 20
 THREAD_DB_PATH = "threads_db"  # Will be created in the current directory
-client = OpenAI(api_key=OPENAI_API_KEY)
+
+_client = None
+
+
+def _get_openai_client():
+    global _client
+    if _client is None:
+        _client = OpenAI(api_key=OPENAI_API_KEY)
+    return _client
 
 
 class ThreadController:
@@ -70,7 +78,7 @@ class ThreadController:
                 return thread_data['thread_id'], False
 
         # If we get here, we need a new thread
-        thread = client.beta.threads.create()
+        thread = _get_openai_client().beta.threads.create()
         self.threads_db[wa_id] = {
             'thread_id': thread.id,
             'last_activity': current_time,
@@ -98,23 +106,37 @@ class ThreadController:
             self._save_threads()
 
 
-# Initialize thread manager
-thread_manager = ThreadController()
+_thread_manager = None
+_cleanup_started = False
 
 
-def cleanup_old_threads_periodically(interval_minutes=5):
+def _get_thread_manager():
+    global _thread_manager, _cleanup_started
+    if _thread_manager is None:
+        _thread_manager = ThreadController()
+        if not _cleanup_started:
+            _cleanup_started = True
+            _start_cleanup_thread()
+    return _thread_manager
+
+
+def _start_cleanup_thread(interval_minutes=5):
     """Run thread cleanup at regular intervals"""
     import threading
 
     def cleanup():
         while True:
-            thread_manager.cleanup_old_threads()
+            _get_thread_manager().cleanup_old_threads()
             time.sleep(interval_minutes * 60)
 
-    # Start the cleanup thread
     cleanup_thread = threading.Thread(target=cleanup, daemon=True)
     cleanup_thread.start()
 
 
-# Start the cleanup thread when the module is imported
-cleanup_old_threads_periodically()
+class _ThreadManagerProxy:
+    """Proxy to defer ThreadController initialization until first use."""
+    def __getattr__(self, name):
+        return getattr(_get_thread_manager(), name)
+
+
+thread_manager = _ThreadManagerProxy()

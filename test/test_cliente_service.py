@@ -1,18 +1,13 @@
 import unittest
-import pytest
 import os
 from dotenv import load_dotenv
 from app.services.cliente_service import ClienteService
-from bson import ObjectId
 
 load_dotenv()
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME_TEST")
 
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        self.assertEqual(True, False)  # add assertion here
-
+class TestClienteService(unittest.TestCase):
     def setUp(self):
         self.cliente_servicio = ClienteService(True)
 

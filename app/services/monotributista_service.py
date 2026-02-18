@@ -35,7 +35,6 @@ class MonotributistaService:
         if not monotributista:
             return False
 
-        #cliente = Cliente(**cliente_data)
         self.collection.update_one(
             {"telefono": telefono},
             {"$addToSet": {"clientes": cliente.__dict__}}

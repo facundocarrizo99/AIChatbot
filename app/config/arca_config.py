@@ -1,4 +1,4 @@
-# app/config/afip_config.py
+# app/config/arca_config.py
 import os
 from pathlib import Path
 
@@ -16,5 +16,7 @@ class AFIPConfig:
     WSAA_URL = "https://wsaahomo.afip.gov.ar/ws/services/LoginCms" if ENVIRONMENT == 'testing' else "https://wsaa.afip.gov.ar/ws/services/LoginCms"
     WSFE_URL = "https://wswhomo.afip.gov.ar/wsfev1/service.asmx" if ENVIRONMENT == 'testing' else "https://servicios1.afip.gov.ar/wsfev1/service.asmx"
 
-    # Create cache directory if it doesn't exist
-    Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
+    @classmethod
+    def ensure_cache_dir(cls):
+        """Create cache directory if it doesn't exist."""
+        Path(cls.CACHE_DIR).mkdir(parents=True, exist_ok=True)

@@ -27,7 +27,6 @@ def handle_message():
         response: A tuple containing a JSON response and an HTTP status code.
     """
     body = request.get_json()
-    # logging.info(f"request body: {body}")
 
     # Check if it's a WhatsApp status update
     if (
@@ -54,7 +53,7 @@ def handle_message():
         return jsonify({"status": "error", "message": "Invalid JSON provided"}), 400
 
 
-# Required webhook verifictaion for WhatsApp
+# Required webhook verification for WhatsApp
 def verify():
     # Parse params from the webhook verification request
     mode = request.args.get("hub.mode")
