@@ -44,20 +44,7 @@ class Monotributista(Usuario):
 
 
     def to_dict_for_factura(self):
-        return {
-            "nombreCompleto": self.nombreCompleto,
-            "telefono": self.telefono,
-            "email": self.email,
-            "condicionIva": self.condicionIva,
-            "cuit": self.cuit,
-            "domicilio": self.domicilio,
-            "razonSocial": self.razonSocial,
-            "categoria_monotributo": self.categoria_monotributo,
-            "actividad": self.actividad,
-            "punto_venta": self.punto_venta,
-            "ingresos_brutos": self.ingresos_brutos,
-            "fecha_inicio_actividad": self.fecha_inicio_actividad
-        }
+        return self.to_dict()
 
     @staticmethod
     def from_dict(data):

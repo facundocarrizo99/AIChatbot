@@ -6,7 +6,7 @@ from app.services.arca_service import ARCAService
 from app.models.factura import Factura
 
 
-class MyTestCase(unittest.TestCase):
+class TestFacturaController(unittest.TestCase):
     def setUp(self):
         self.factura_controller = FacturaController()
         self.arca_service = ARCAService()

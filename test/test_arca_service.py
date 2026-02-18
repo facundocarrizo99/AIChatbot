@@ -44,7 +44,7 @@ def test_cae_request():
     result = invoice_service.request_cae(invoice_data)
     print("CAE Request Result:", result)
 
-class MyTestCase(unittest.TestCase):
+class TestARCAService(unittest.TestCase):
     def setUp(self):
         # Set up environment variables for testing
         os.environ['ARCA_CUIT'] = '20267565393'

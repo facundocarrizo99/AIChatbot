@@ -50,6 +50,7 @@ class AFIPAuthService:
             cms = wsaa.SignTRA(tra, cert, private_key)
 
             # Request authorization
+            self.config.ensure_cache_dir()
             response = wsaa.Conectar(wsdl=wsdl, cache=None, proxy=None, wrapper=None, cacert=None,
                                      url=self.config.WSAA_URL, cache_dir=self.config.CACHE_DIR)
 

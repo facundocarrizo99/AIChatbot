@@ -5,7 +5,7 @@ from app.models.factura import Factura
 from app.services.factura_service import FacturaService
 from app.controller.factura_controller import FacturaController
 
-class MyTestCase(unittest.TestCase):
+class TestFacturaService(unittest.TestCase):
     def setUp(self):
         self.factura_service = FacturaService()
         self.factura_controller = FacturaController()

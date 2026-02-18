@@ -1,13 +1,18 @@
 import json
 import re
 
-from app.controller.factura_controller import FacturaController
-from app.controller.monotributista_controller import MonotributistaController
 from app.models.monotributista import Monotributista
 from app.models.cliente import Cliente
 
-monotributistaController = MonotributistaController()
-facturaController = FacturaController()
+_monotributista_controller = None
+
+
+def _get_monotributista_controller():
+    global _monotributista_controller
+    if _monotributista_controller is None:
+        from app.controller.monotributista_controller import MonotributistaController
+        _monotributista_controller = MonotributistaController()
+    return _monotributista_controller
 
 
 def getOnlyJsonFrom(text):
@@ -53,32 +58,32 @@ def hasJsonInside(text):
     return False
 
 
-def convertJSONToCliente(json):
+def convertJSONToCliente(data):
     # Convertir el JSON a un objeto Cliente
     cliente = Cliente(
-        nombreCompleto=json.get("name"),
-        telefono=json.get("Phone"),
-        email=json.get("Email"),
-        condicionIva=json.get("condition_iva"),
-        cuit=json.get("cuit"),
-        domicilio=json.get("Address")
+        nombreCompleto=data.get("name"),
+        telefono=data.get("Phone"),
+        email=data.get("Email"),
+        condicionIva=data.get("condition_iva"),
+        cuit=data.get("cuit"),
+        domicilio=data.get("Address")
     )
     return cliente
 
 
-def convertJSONToMonotributista(json):
+def convertJSONToMonotributista(data):
     # Convertir el JSON a un objeto Monotributista
     monotributista = Monotributista(
-        nombreCompleto=json.get("full_name"),
-        telefono=json.get("phone"),
-        email=json.get("email"),
-        condicionIva=json.get("condition_iva"),
-        cuit=json.get("cuit"),
-        domicilio=json.get("tax_address"),
-        razonSocial=json.get("company_name"),
-        categoria_monotributo=json.get("monotributo_category"),
-        actividad=json.get("activity"),
-        punto_venta=json.get("point_of_sale")
+        nombreCompleto=data.get("full_name"),
+        telefono=data.get("phone"),
+        email=data.get("email"),
+        condicionIva=data.get("condition_iva"),
+        cuit=data.get("cuit"),
+        domicilio=data.get("tax_address"),
+        razonSocial=data.get("company_name"),
+        categoria_monotributo=data.get("monotributo_category"),
+        actividad=data.get("activity"),
+        punto_venta=data.get("point_of_sale")
     )
 
     return monotributista
@@ -88,7 +93,7 @@ def check_string_for_specific_words(message, wa_id):
     """
     Recorre un texto y determina a qué categoría pertenece según las listas de palabras clave.
     """
-    monotributista = monotributistaController.obtener_por_telefono(wa_id)
+    monotributista = _get_monotributista_controller().obtener_por_telefono(wa_id)
     if monotributista is not None:
         return 'General'
 

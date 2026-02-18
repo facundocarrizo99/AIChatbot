@@ -31,6 +31,8 @@ env/
 
 # Shelve database files
 threads_db/
+test/threads_db*
+test/factura_generada.pdf
 
 # AFIP cache
 afip_cache/

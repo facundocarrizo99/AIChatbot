@@ -11,11 +11,11 @@ from app.utils import whatsapp_utils
 class FacturaController:
     def __init__(self):
         self.service = FacturaService()
-        self.monotributista_controler = MonotributistaController()
+        self.monotributista_controller = MonotributistaController()
         self.arca_service = ARCAService()
 
     def crear_factura(self, tele_monotributista, cliente, productos):
-        monotributista = Monotributista.from_dict(self.monotributista_controler.obtener_por_telefono(tele_monotributista))
+        monotributista = Monotributista.from_dict(self.monotributista_controller.obtener_por_telefono(tele_monotributista))
         cliente = monotributista.buscar_clientes_por_valor(cliente)[0]
 
         factura = Factura()
@@ -23,7 +23,7 @@ class FacturaController:
 
         try:
             res = self.service.crear_factura(factura)
-            Process(target=self.issue_invoice(factura)).start()
+            Process(target=self.issue_invoice, args=(factura,)).start()
             return res
         except Exception as e:
             logging.error(f"Error al crear factura: {e}")
@@ -58,7 +58,6 @@ class FacturaController:
             return []
 
     def issue_invoice(self, factura):
-        #time.sleep(20)
         factura = self.arca_service.agregar_cae(factura)
         self.service.modificar_factura(factura.numero, factura.to_dict())
         pdf = factura.factura_to_pdf()

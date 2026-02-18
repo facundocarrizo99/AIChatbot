@@ -3,7 +3,7 @@ from app.services.monotributista_service import MonotributistaService
 
 monotribustistaService = MonotributistaService(True)
 
-class MyTestCase(unittest.TestCase): # add assertion here
+class TestMonotributistaService(unittest.TestCase): 
     def test_agregar_monotributista(self):
         datos = {
             "nombreCompleto": "Juan Test",

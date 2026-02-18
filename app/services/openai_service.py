@@ -1,6 +1,5 @@
 import logging
 import os
-import shelve
 import time
 import json
 from typing import Dict
@@ -15,7 +14,15 @@ from app.controller.monotributista_controller import MonotributistaController
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_ASSISTANT_ID_ORIGINAL = os.getenv("OPENAI_ASSISTANT_ID_ORIGINAL")
-client = OpenAI(api_key=OPENAI_API_KEY)
+
+_client = None
+
+
+def _get_openai_client():
+    global _client
+    if _client is None:
+        _client = OpenAI(api_key=OPENAI_API_KEY)
+    return _client
 
 
 class OpenAIService:
@@ -39,7 +46,7 @@ class OpenAIService:
     def add_message_to_thread(self, thread_id: str, message: str) -> None:
         """Add a message to an existing thread"""
         try:
-            client.beta.threads.messages.create(
+            _get_openai_client().beta.threads.messages.create(
                 thread_id=thread_id,
                 role="user",
                 content=message
@@ -64,8 +71,8 @@ class OpenAIService:
                 logging.info(f"Message limit reached for thread {thread_id}, creating new thread")
                 thread_id = self.create_thread(name, wa_id)
 
-            assistant = client.beta.assistants.retrieve(assistant_id)
-            run = client.beta.threads.runs.create(
+            assistant = _get_openai_client().beta.assistants.retrieve(assistant_id)
+            run = _get_openai_client().beta.threads.runs.create(
                 thread_id=thread_id,
                 assistant_id=assistant.id,
                 instructions=f"You are having a conversation with {name} (WA: {wa_id})"
@@ -73,7 +80,7 @@ class OpenAIService:
 
             while True:
                 time.sleep(1.5)
-                run = client.beta.threads.runs.retrieve(
+                run = _get_openai_client().beta.threads.runs.retrieve(
                     thread_id=thread_id,
                     run_id=run.id
                 )
@@ -85,7 +92,7 @@ class OpenAIService:
                     self._handle_required_actions(thread_id, run, wa_id)
 
             # Get the response
-            messages = client.beta.threads.messages.list(thread_id=thread_id)
+            messages = _get_openai_client().beta.threads.messages.list(thread_id=thread_id)
             if not messages.data:
                 return "I'm sorry, I couldn't process your request."
 
@@ -120,7 +127,7 @@ class OpenAIService:
                 "output": result
             })
 
-        client.beta.threads.runs.submit_tool_outputs(
+        _get_openai_client().beta.threads.runs.submit_tool_outputs(
             thread_id=thread_id,
             run_id=run.id,
             tool_outputs=tool_outputs
@@ -159,20 +166,18 @@ class OpenAIService:
         self.add_message_to_thread(thread_id, message)
         return self.run_assistant(thread_id, name, wa_id)
 
-# Create a singleton instance
-openai_service = OpenAIService()
+_openai_service = None
+
+
+def _get_openai_service():
+    global _openai_service
+    if _openai_service is None:
+        _openai_service = OpenAIService()
+    return _openai_service
+
 
 # Public interface functions
 def generate_ai_response(message_body: str, wa_id: str, name: str) -> str:
     """Main entry point for generating AI responses"""
-    return openai_service.process_message(message_body, wa_id, name)
-
-# Use context manager to ensure the shelf file is closed properly
-def check_if_thread_exists(wa_id):
-    with shelve.open("threads_db") as threads_shelf:
-        return threads_shelf.get(wa_id, None)
-
-def store_thread(wa_id, thread_id):
-    with shelve.open("threads_db", writeback=True) as threads_shelf:
-        threads_shelf[wa_id] = thread_id
+    return _get_openai_service().process_message(message_body, wa_id, name)
 

@@ -2,8 +2,8 @@ import unittest
 from app.utils.string_utils import getOnlyJsonFrom
 
 
-class MyTestCase(unittest.TestCase):
-    def test_something(self):
+class TestStringToJson(unittest.TestCase):
+    def test_extract_json_from_markdown_block(self):
         input = """Perfecto, aquí tienes el registro completo como monotributista con los datos adicionales:
                 ```json
                 {
