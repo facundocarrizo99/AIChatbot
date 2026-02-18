@@ -142,7 +142,6 @@ def send_document_message(recipient_number, file_path, filename_to_display="docu
 
     try:
         response = requests.post(message_url, json=payload, headers=headers_message, timeout=10)
-        #response = send_message(payload)
         response.raise_for_status()
     except requests.Timeout:
         logging.error("Timeout sending PDF")

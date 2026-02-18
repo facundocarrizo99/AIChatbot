@@ -1,81 +1,282 @@
-# **Correr el proyecto**
+# AIChatbot — WhatsApp AI Assistant
 
-Esta guía describe cómo utilizar nuestro asistente de WhatsApp utilizando la API en la nube de Meta (anteriormente Facebook) con Python puro, específicamente con el framework Flask. También se integrarán eventos vía webhook para recibir mensajes en tiempo real, e incorporar respuestas automáticas generadas mediante inteligencia artificial.
+A production-ready WhatsApp chatbot powered by **OpenAI Assistants**, **Flask**, and **MongoDB**. It handles real-time conversations, manages users, and generates **AFIP-compliant electronic invoices** for Argentine small businesses (monotributistas).
 
-## **Requisitos Previos**
+---
 
-1. Tener conocimientos básicos de Python.
-2. Solicitar al administrador el acceso a:
-    - Una cuenta de desarrollador en Meta.
-    - Una aplicación empresarial de Meta con acceso a la API de WhatsApp.
-    - La plataforma de inteligencia artificial (por ejemplo, OpenAI).
-    - Un dominio y acceso a túneles seguros como ngrok.
-    - La base de datos MongoDB utilizada por el bot.
+## What Problem It Solves
 
-## **Tabla de Contenidos**
+Argentine monotributistas (self-employed workers) need a fast, accessible way to manage clients and issue legal invoices. This bot turns WhatsApp — a tool they already use — into an AI-powered business assistant that can:
 
-- [Crear un Bot de WhatsApp con Python y Flask](https://www.notion.so/Documentation-1b56583c45b480b1a90ac723548e0037?pvs=21)
-    - [Requisitos Previos](https://www.notion.so/Documentation-1b56583c45b480b1a90ac723548e0037?pvs=21)
-    - [Tabla de Contenidos](https://www.notion.so/Documentation-1b56583c45b480b1a90ac723548e0037?pvs=21)
-    - [Comenzar](https://www.notion.so/Documentation-1b56583c45b480b1a90ac723548e0037?pvs=21)
-    - [Paso 1: Seleccionar Números de Teléfono](https://www.notion.so/Documentation-1b56583c45b480b1a90ac723548e0037?pvs=21)
-    - [Paso 2: Enviar Mensajes con la API](https://www.notion.so/Documentation-1b56583c45b480b1a90ac723548e0037?pvs=21)
-    - [Paso 3: Configurar Webhooks para Recibir Mensajes](https://www.notion.so/Documentation-1b56583c45b480b1a90ac723548e0037?pvs=21)
-    - [Próximos Pasos](https://www.notion.so/Documentation-1b56583c45b480b1a90ac723548e0037?pvs=21)
+- **Answer questions** via natural language
+- **Register and manage clients**
+- **Generate PDF invoices** and send them via WhatsApp
+- **Integrate with AFIP/ARCA** for electronic invoice authorization (CAE)
 
-## **Comenzar**
+---
 
-Antes de realizar pruebas, es necesario clonar el repositorio del proyecto y ejecutar la aplicación localmente. Para ello:
+## Key Features
 
-1. Clonar el repositorio:
+| Feature | Description |
+|---|---|
+| 🤖 AI Conversations | OpenAI Assistants API with thread management and automatic cleanup |
+| 📱 WhatsApp Integration | Meta Cloud API webhooks for real-time message processing |
+| 🧾 Invoice Generation | PDF invoices with ReportLab, sent directly via WhatsApp |
+| 🏛️ AFIP/ARCA Integration | CAE authorization for Argentine tax-compliant electronic invoices |
+| 👥 User Management | MongoDB-backed CRUD for clients and monotributistas |
+| 🔐 Webhook Security | HMAC-SHA256 signature validation on all incoming requests |
 
-```
-git clone https://github.com/facundocarrizo99/AIChatbot
+---
 
-cd python-whatsapp-bot
-```
-
-2. Instalar las dependencias:
+## Architecture Overview
 
 ```
+WhatsApp User
+    │
+    ▼
+Meta Cloud API ──▶ Flask Webhook (/webhook POST)
+                        │
+                        ├─▶ Signature Validation (HMAC-SHA256)
+                        ├─▶ Message Processing
+                        │       │
+                        │       ▼
+                        │   OpenAI Assistants API
+                        │       │
+                        │       ├─▶ Function Calls (tool_outputs)
+                        │       │       ├─▶ FacturaController
+                        │       │       ├─▶ MonotributistaController
+                        │       │       └─▶ ClienteController
+                        │       │
+                        │       └─▶ AI Response
+                        │
+                        └─▶ WhatsApp Reply
+                                │
+                                ├─▶ Text Messages
+                                └─▶ PDF Documents (invoices)
+
+MongoDB                 AFIP/ARCA
+  │                        │
+  ├── Usuarios             ├── WSAA Authentication
+  ├── Facturas             └── CAE Authorization
+  └── Threads
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Runtime** | Python 3.10+ |
+| **Framework** | Flask 3.1 |
+| **AI** | OpenAI Assistants API |
+| **Database** | MongoDB (pymongo) |
+| **PDF** | ReportLab |
+| **Messaging** | Meta WhatsApp Cloud API |
+| **Tax Integration** | AFIP/ARCA via pyafipws |
+
+---
+
+## Folder Structure
+
+```
+├── run.py                      # Application entry point
+├── app/
+│   ├── __init__.py             # Flask app factory
+│   ├── config/
+│   │   ├── config.py           # Environment + logging configuration
+│   │   ├── database.py         # MongoDB connection
+│   │   ├── arca_config.py      # AFIP service URLs and paths
+│   │   └── palabras_clave.json # Keyword classification rules
+│   ├── views/
+│   │   └── views.py            # Webhook routes (GET verify, POST message)
+│   ├── controllers/
+│   │   ├── thread_controller.py        # OpenAI thread lifecycle
+│   │   ├── factura_controller.py       # Invoice creation + PDF dispatch
+│   │   ├── monotributista_controller.py # Monotributista operations
+│   │   └── cliente_controller.py       # Client CRUD
+│   ├── services/
+│   │   ├── openai_service.py           # OpenAI Assistants orchestration
+│   │   ├── factura_service.py          # Invoice persistence (MongoDB)
+│   │   ├── monotributista_service.py   # Monotributista persistence
+│   │   ├── cliente_service.py          # Client persistence
+│   │   ├── arca_service.py             # CAE generation
+│   │   └── arca_auth_service.py        # AFIP authentication
+│   ├── models/
+│   │   ├── usuario.py          # Abstract base user
+│   │   ├── cliente.py          # Client model
+│   │   ├── monotributista.py   # Monotributista model
+│   │   └── factura.py          # Invoice + Product models, PDF generation
+│   ├── utils/
+│   │   ├── whatsapp_utils.py   # Message sending, document upload
+│   │   └── string_utils.py     # JSON extraction, keyword matching
+│   ├── decorators/
+│   │   └── security.py         # HMAC signature validation decorator
+│   └── arca/                   # AFIP electronic invoice modules
+│       ├── authentication.py
+│       ├── arca_auth.py
+│       ├── electronic_invoice.py
+│       ├── journal.py
+│       └── wsaa.py
+├── test/                       # Unit tests
+├── docs/                       # Documentation and assets
+├── templates/                  # HTML templates (invoice)
+└── img/                        # Static images
+```
+
+---
+
+## Installation
+
+### Prerequisites
+
+- Python 3.10+
+- MongoDB instance (local or Atlas)
+- Meta Developer account with WhatsApp Business API access
+- OpenAI API key with Assistants access
+- (Optional) AFIP certificates for production invoice authorization
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/facundocarrizo99/AIChatbot.git
+cd AIChatbot
+
+# Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Linux/macOS
+# .venv\Scripts\activate   # Windows
+
+# Install dependencies
 pip install -r requirements.txt
+pip install -r requirements-test.txt  # For development
 ```
 
-1. 
-2. Ejecutar la aplicación:
+### Environment Configuration
 
+```bash
+# Copy the example environment file
+cp .env.example .env
 ```
+
+Edit `.env` and fill in your credentials:
+
+| Variable | Description |
+|---|---|
+| `ACCESS_TOKEN` | Meta WhatsApp API access token |
+| `APP_SECRET` | Meta app secret (for webhook signature validation) |
+| `PHONE_NUMBER_ID` | WhatsApp phone number ID |
+| `VERIFY_TOKEN` | Custom webhook verification token |
+| `OPENAI_API_KEY` | OpenAI API key |
+| `OPENAI_ASSISTANT_ID_ORIGINAL` | OpenAI Assistant ID |
+| `MONGO_URI` | MongoDB connection string |
+| `DB_NAME` | Production database name |
+| `DB_NAME_TEST` | Test database name |
+
+See `.env.example` for the full list including AFIP/ARCA configuration.
+
+---
+
+## Running Locally
+
+```bash
 python run.py
 ```
 
-Asegurarse de tener el entorno configurado correctamente y de haber solicitado previamente acceso a las credenciales necesarias.
+The server starts on `http://0.0.0.0:8000`.
 
-## **Paso 1: Seleccionar Números de Teléfono**
+### Webhook Setup
 
-1. Asegurarse de que WhatsApp esté habilitado en la aplicación correspondiente.
-2. Se comenzará con un número de prueba proporcionado por la plataforma, el cual puede enviar mensajes a hasta 5 números diferentes.
-3. Desde la configuración de la API, identificar el número de prueba desde el cual se enviarán los mensajes.
-4. Se pueden añadir otros números de destino, incluido el propio número de WhatsApp del usuario.
-5. Para verificar el número, se recibirá un código vía mensaje de WhatsApp en el dispositivo correspondiente.
+For local development, expose your server with a tunnel:
 
-## **Paso 2: Enviar Mensajes con la API**
+```bash
+ngrok http 8000
+```
 
-1. Solicitar al administrador un token de acceso válido.
-2. El administrador también podrá proveer ejemplos de cómo enviar mensajes desde Python.
-3. Crear un archivo .env basado en un ejemplo proporcionado y completar las variables necesarias con los datos provistos.
-4. Ejecutar la aplicación para enviar un mensaje de prueba. El mensaje puede tardar entre 60 y 120 segundos en llegar.
+Then configure the webhook URL in the Meta Developer Dashboard:
 
-## **Paso 3: Configurar Webhooks para Recibir Mensajes**
+1. Go to **WhatsApp** → **Configuration**
+2. Set the webhook URL to `https://<your-ngrok-url>/webhook`
+3. Set the verify token to match your `VERIFY_TOKEN` env var
+4. Subscribe to the **messages** field
 
-1. Solicitar al administrador acceso al dominio de prueba (ngrok) y configurar el endpoint para recibir los mensajes.
-2. En el panel de la aplicación de Meta, dirigirse a WhatsApp > Configuración y editar la URL del webhook.
-3. Ingresar la URL proporcionada por ngrok y añadir /webhook al final.
-4. Definir un token de verificación personalizado y establecerlo como variable de entorno.
-5. Asegurarse de que la aplicación local registre correctamente la verificación del webhook en la consola.
-6. Suscribirse al campo **messages** en el panel de configuración del webhook.
-7. Probar la suscripción enviando un mensaje de prueba desde Meta.
-8. Verificar que el bot reciba y procese correctamente los mensajes, mostrando tanto encabezados como cuerpo del mensaje en la consola.
+---
 
-## **Próximos Pasos**
+## Testing
 
-Una vez verificado que el bot responde correctamente, se podrá avanzar en el desarrollo de funcionalidades personalizadas. Para esto, será necesario solicitar acceso a la base de datos MongoDB donde se almacenan y consultan los datos de los usuarios y conversaciones.
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=app
+
+# Run a specific test file
+pytest test/test_string_to_json.py -v
+```
+
+> **Note:** Most tests that interact with MongoDB or OpenAI require valid credentials in `.env`.
+
+---
+
+## API Overview
+
+### `GET /webhook`
+
+Webhook verification endpoint for Meta WhatsApp API.
+
+**Query Parameters:**
+- `hub.mode` — Must be `subscribe`
+- `hub.verify_token` — Must match `VERIFY_TOKEN`
+- `hub.challenge` — Returned on success
+
+### `POST /webhook`
+
+Receives incoming WhatsApp messages. Protected by HMAC-SHA256 signature validation.
+
+**Headers:**
+- `X-Hub-Signature-256` — `sha256=<signature>`
+
+**Flow:**
+1. Validates signature
+2. Extracts message from webhook payload
+3. Sends message to OpenAI Assistant
+4. Returns AI response via WhatsApp
+
+---
+
+## Scripts
+
+| Command | Description |
+|---|---|
+| `python run.py` | Start the Flask server |
+| `pytest` | Run test suite |
+| `pytest --cov=app` | Run tests with coverage report |
+
+---
+
+## Deployment Notes
+
+- Set `AFIP_ENVIRONMENT=production` for real invoice authorization
+- Ensure AFIP certificates (`AFIP_CERT_FILE`, `AFIP_PRIVATE_KEY_FILE`) are properly configured
+- Use a production WSGI server (e.g., Gunicorn): `gunicorn run:app -b 0.0.0.0:8000`
+- Set up persistent MongoDB (Atlas recommended)
+- Configure Meta webhook with your production domain (HTTPS required)
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make your changes and add tests
+4. Run the test suite: `pytest`
+5. Commit with clear messages: `git commit -m "Add: feature description"`
+6. Push and open a Pull Request
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENCE.txt).
